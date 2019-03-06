@@ -3,7 +3,7 @@ import axios from 'axios';
 export default class ApiSocket {
     constructor() {
         this.instance = axios.create({
-            baseURL: `http://${REMOTE_API_URL}`, //'http://192.168.1.62',
+            baseURL: DEVELOPMENT ? `http://${REMOTE_API_URL}` : API_URL,
             timeout: 6000,
             method: 'post',
             //maxContentLength: 40000
@@ -23,7 +23,7 @@ export default class ApiSocket {
             wifi: 'wifi'
         };
 
-        console.log({baseUrl:`http://${REMOTE_API_URL}`})
+        console.log({baseUrl:this.instance.baseURL})
     }
 
     getWifiList = () => {
@@ -38,7 +38,8 @@ export default class ApiSocket {
                     data: {
                         type: this.types.query,
                         component: this.components.wifi,
-                        cmd: 'scan'
+                        cmd: 'scan',
+                        id: Date.now()
                     }
                 });
                 reslove(resp);
@@ -61,7 +62,8 @@ export default class ApiSocket {
                         component: this.components.wifi,
                         cmd: 'connect',
                         ssid,
-                        password
+                        password,
+                        id: Date.now()
                     }
                 });
                 reslove(resp);
