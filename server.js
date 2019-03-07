@@ -44,7 +44,8 @@ if (isDevelopment) {
     );
     app.use(
         require('webpack-hot-middleware')(compiler, {
-            publicPath: webpackConfig.output.publicPath
+            publicPath: webpackConfig.output.publicPath,
+            //path: '/__webpack_hmr',
         })
     );
     app.use('*', (req, res, next) => {

@@ -3,6 +3,7 @@ import React, { Fragment } from 'react';
 import Index from './views/home'
 import App from './views/app';
 import WiFiConfigView from './views/wifi-config';
+import LogView from './views/log';
 //import ProductInfo from './views/product-info/product-info';
 //import Products from './views/products/products';
 //import Contacts from '../client/views/contacts/contacts';
@@ -30,7 +31,12 @@ const routes = [
                 component: WiFiConfigView,
                 isScrollRoute: false
             },
-
+            {
+                name: 'log',
+                path: '/log',
+                component: LogView,
+                isScrollRoute: false
+            },
         ]
     }
 ]

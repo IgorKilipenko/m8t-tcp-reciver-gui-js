@@ -1,17 +1,23 @@
 import { observable, computed, action } from 'mobx';
-import { Server } from 'https';
 import ApiSocket from '../components/api-socket';
 
 const api = new ApiSocket();
 
-export default class ApiStore{
+export default class ApiStore {
     @observable _receiverState = {
-        enabled:false,
-        timeStart:0,
-    }
+        enabled: false,
+        timeStart: 0,
+        timeReceive: 0
+    };
     @observable _serverState = {
-        serverStart: 0
-    }
+        serverStart: 0,
+        sdSuccess: false
+    };
+
+    @observable _wifiState = {
+        list: [],
+        lastUpdate: null
+    };
 
     @action
     setReceiverState(state) {
@@ -50,23 +56,67 @@ export default class ApiStore{
     }
 
     @computed
-    get timeReceive(){
-        const {enabled, timeStart } = this._receiverState;
-        const {serverStart} = this.serverState;
+    get timeReceive() {
+        const { enabled, timeStart } = this._receiverState;
+        const { serverStart } = this.serverState;
         //console.log({enabled, timeStart, serverStart})
-        if (!enabled || !timeStart){
+        if (!enabled || !timeStart) {
             return 0;
         }
         return Date.now() - timeStart - serverStart;
     }
 
+    @computed
+    get serverStartTime() {
+        return new Date(Date.now() - this._serverState.serverStart);
+    }
+
     @action
-    async updateServerState(){
-        try{
+    async updateServerState() {
+        try {
             const res = await api.getServerInfo();
             this._serverState.serverStart = Date.now() - res.data.server_time;
-        }catch (err){
-            console.error("Error {ApiStore} get server state", {err, res, sender:this});
+            this._serverState.sdSuccess = res.data.sd_success;
+            return null;
+        } catch (err) {
+            return this.sendApiError(err);
         }
     }
+
+    @action
+    async updateReceiverState() {
+        try {
+            const res = await api.getReceiverState();
+            const { enabled, timeStart, timeReceive } = res.data;
+            this._receiverState = {
+                enabled,
+                timeStart,
+                timeReceive
+            };
+            return null;
+        } catch (err) {
+            return this.sendApiError(err);
+        }
+    }
+
+    @action
+    async updateWiFiList() {
+        try {
+            const res = await api.getWifiList();
+            this._wifiState.list = res.data;
+            this._wifiState.lastUpdate = new Date();
+            return null;
+        } catch (err) {
+            return this.sendApiError(err);
+        }
+    }
+
+    sendApiError = err => {
+        console.error('Error {ApiStore} get server state', {
+            err,
+            sender: this
+        });
+
+        return err;
+    };
 }

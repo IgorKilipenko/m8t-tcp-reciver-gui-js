@@ -24,16 +24,9 @@ class WiFiConfigView extends React.Component {
     componentDidMount = async () => {
         try {
             const res = await apiSocket.getWifiList();
-            console.log({ res });
-            if (res.status == 200) {
-                this.setState({ wifiData: res.data.value || [] });
-            } else {
-                console.log(
-                    `Error response status: ${res.status}`,
-                    { res },
-                    this
-                );
-            }
+            //console.log({ res });
+
+                this.setState({ wifiData: res.data || [] });
         } catch (err) {
             console.log({ err }, this);
         }

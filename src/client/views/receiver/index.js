@@ -28,10 +28,11 @@ class ReceiverView extends React.Component {
 
     startRecTimeInterval = () => {
         const interval = setInterval(() => {
-            const date = new Date(this.props.apiStore.timeReceive);
+            let date = new Date(this.props.apiStore.timeReceive);
+            date = ('00' + date.getUTCHours()).slice(-2) + ':' + ('00' + date.getUTCMinutes()).slice(-2) + ':' + ('00' + date.getUTCSeconds()).slice(-2) + '.' + ('00' + date.getUTCMilliseconds()).slice(-2);
             //date.setTime(this.props.apiStore.timeReceive);
             this.setState(prev => ({
-                timeReceive: `${date.getUTCHours()}:${date.getUTCMinutes()}:${date.getUTCSeconds()}.${date.getUTCMilliseconds()}`
+                timeReceive: date
             }));
         }, 1000);
         return interval;

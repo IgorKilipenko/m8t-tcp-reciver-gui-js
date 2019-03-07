@@ -28,50 +28,44 @@ export default class ApiSocket {
     }
 
     getWifiList = () => {
-        return new Promise(async (reslove, reject) => {
-            try {
-                const resp = await this.instance({
-                    method: 'post',
-                    //url: '/api',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    data: {
-                        type: this.types.query,
-                        component: this.components.wifi,
-                        cmd: 'scan',
-                        id: Date.now()
-                    }
-                });
-                reslove(resp);
-            } catch (err) {
-                reject(err);
-            }
-        });
+        return this.query({
+            component: this.components.wifi,
+            type: this.types.query,
+            cmd: "scan"
+        })
     };
 
+    //connectWiFiSTA = (ssid, password) => {
+    //    return new Promise(async (reslove, reject) => {
+    //        try {
+    //            const resp = await this.instance({
+    //                method: 'post',
+    //                //url: '/service',
+    //                headers: this.headers.json,
+    //                //baseURL: 'http://192.168.1.62',
+    //                data: {
+    //                    type: this.types.action,
+    //                    component: this.components.wifi,
+    //                    cmd: 'connect',
+    //                    ssid,
+    //                    password,
+    //                    id: Date.now()
+    //                }
+    //            });
+    //            reslove(resp);
+    //        } catch (err) {
+    //            reject(err);
+    //        }
+    //    });
+    //};
+
     connectWiFiSTA = (ssid, password) => {
-        return new Promise(async (reslove, reject) => {
-            try {
-                const resp = await this.instance({
-                    method: 'post',
-                    //url: '/service',
-                    headers: this.headers.json,
-                    //baseURL: 'http://192.168.1.62',
-                    data: {
-                        type: this.types.action,
-                        component: this.components.wifi,
-                        cmd: 'connect',
-                        ssid,
-                        password,
-                        id: Date.now()
-                    }
-                });
-                reslove(resp);
-            } catch (err) {
-                reject(err);
-            }
-        });
+        return this.action({
+            component: this.components.receiver,
+            cmd: 'connect',
+            ssid,
+            password
+        })
     };
 
     getReceiverState = () => {

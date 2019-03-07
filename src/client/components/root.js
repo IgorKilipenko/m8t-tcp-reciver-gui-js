@@ -17,6 +17,8 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import CellWifiIcon from '@material-ui/icons/CellWifi';
+import SdIcon from '@material-ui/icons/Save';
+import LogIcon from '@material-ui/icons/Message';
 import SpeakerPhoneIcon from '@material-ui/icons/SpeakerPhone';
 import { Link } from 'react-router-dom';
 
@@ -83,23 +85,35 @@ const styles = theme => ({
     content: {
         flexGrow: 1,
         padding: theme.spacing.unit * 3
+    },
+
+    /**App Bar */
+    grow: {
+        flexGrow: 1
+    },
+    sectionDesktop: {
+        display: 'flex',
+        paddingRight: theme.spacing.unit * 3
+        //[theme.breakpoints.up('md')]: {
+        //    display: 'flex'
+        //}
     }
 });
 
 class MiniDrawer extends React.Component {
     state = {
         open: false,
-        status: '',
-        data: [
-            {
-                '1': 'rssi',
-                '2': 'ssid',
-                '3': 'bssid',
-                '4': 'channel',
-                '5': 'secure',
-                '6': 'hidden'
-            }
-        ]
+        status: ''
+        //data: [
+        //    {
+        //        '1': 'rssi',
+        //        '2': 'ssid',
+        //        '3': 'bssid',
+        //        '4': 'channel',
+        //        '5': 'secure',
+        //        '6': 'hidden'
+        //    }
+        //]
     };
 
     handleDrawerOpen = () => {
@@ -110,22 +124,92 @@ class MiniDrawer extends React.Component {
         this.setState({ open: false });
     };
 
-    getWifiLiset = async () => {
-        try {
-            const resp = await axios({
-                method: 'get',
-                url: 'http://192.168.1.62/api/wifi/scan',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            this.setState({
-                staus: resp.status,
-                data: resp.data
-            });
-        } catch (err) {
-            console.log({ err });
-        }
+    renderAppBar = () => {
+        const { classes, theme } = this.props;
+        return (
+            <AppBar
+                position="fixed"
+                className={classNames(classes.appBar, {
+                    [classes.appBarShift]: this.state.open
+                })}
+            >
+                <Toolbar disableGutters={!this.state.open}>
+                    <IconButton
+                        color="inherit"
+                        aria-label="Open drawer"
+                        onClick={this.handleDrawerOpen}
+                        className={classNames(classes.menuButton, {
+                            [classes.hide]: this.state.open
+                        })}
+                    >
+                        <MenuIcon />
+                    </IconButton>
+                    <Typography variant="h6" color="inherit" noWrap>
+                        ESP GPS GUI
+                    </Typography>
+                    <div className={classes.grow} />
+                    <div className={classes.sectionDesktop}>
+                        <Typography variant="button" color="inherit" noWrap>
+                            Time
+                        </Typography>
+                    </div>
+                </Toolbar>
+            </AppBar>
+        );
+    };
+
+    renderDrawer = () => {
+        const { classes, theme } = this.props;
+        return (
+            <Drawer
+                variant="permanent"
+                className={classNames(classes.drawer, {
+                    [classes.drawerOpen]: this.state.open,
+                    [classes.drawerClose]: !this.state.open
+                })}
+                classes={{
+                    paper: classNames({
+                        [classes.drawerOpen]: this.state.open,
+                        [classes.drawerClose]: !this.state.open
+                    })
+                }}
+                open={this.state.open}
+            >
+                <div className={classes.toolbar}>
+                    <IconButton onClick={this.handleDrawerClose}>
+                        {theme.direction === 'rtl' ? (
+                            <ChevronRightIcon />
+                        ) : (
+                            <ChevronLeftIcon />
+                        )}
+                    </IconButton>
+                </div>
+                <Divider />
+                <List>
+                    <ListItem button key={1} component={Link} to="/">
+                        <ListItemIcon>
+                            <SpeakerPhoneIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Home" />
+                    </ListItem>
+                </List>
+                <Divider />
+                <List>
+                    <ListItem button key={'wifi_config'} component={Link} to="/wifi_config">
+                        <ListItemIcon>
+                            <CellWifiIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="WiFi config" />
+                    </ListItem>
+                    <ListItem button key={'log'} component={Link} to="/log">
+                        <ListItemIcon>
+                            <LogIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Server logs" />
+                    </ListItem>
+                </List>
+            </Drawer>
+        );
     };
 
     render() {
@@ -133,76 +217,8 @@ class MiniDrawer extends React.Component {
 
         return (
             <div className={classes.root}>
-                <CssBaseline />
-                <AppBar
-                    position="fixed"
-                    className={classNames(classes.appBar, {
-                        [classes.appBarShift]: this.state.open
-                    })}
-                >
-                    <Toolbar disableGutters={!this.state.open}>
-                        <IconButton
-                            color="inherit"
-                            aria-label="Open drawer"
-                            onClick={this.handleDrawerOpen}
-                            className={classNames(classes.menuButton, {
-                                [classes.hide]: this.state.open
-                            })}
-                        >
-                            <MenuIcon />
-                        </IconButton>
-                        <Typography variant="h6" color="inherit" noWrap>
-                            ESP GPS GUI
-                        </Typography>
-                    </Toolbar>
-                </AppBar>
-                <Drawer
-                    variant="permanent"
-                    className={classNames(classes.drawer, {
-                        [classes.drawerOpen]: this.state.open,
-                        [classes.drawerClose]: !this.state.open
-                    })}
-                    classes={{
-                        paper: classNames({
-                            [classes.drawerOpen]: this.state.open,
-                            [classes.drawerClose]: !this.state.open
-                        })
-                    }}
-                    open={this.state.open}
-                >
-                    <div className={classes.toolbar}>
-                        <IconButton onClick={this.handleDrawerClose}>
-                            {theme.direction === 'rtl' ? (
-                                <ChevronRightIcon />
-                            ) : (
-                                <ChevronLeftIcon />
-                            )}
-                        </IconButton>
-                    </div>
-                    <Divider />
-                    <List>
-                        <ListItem button key={1} component={Link} to="/">
-                            <ListItemIcon>
-                                <SpeakerPhoneIcon />
-                            </ListItemIcon>
-                            <ListItemText primary="Home" />
-                        </ListItem>
-                    </List>
-                    <Divider />
-                    <List>
-                        <ListItem
-                            button
-                            key={1}
-                            component={Link}
-                            to="/wifi_config"
-                        >
-                            <ListItemIcon>
-                                <CellWifiIcon />
-                            </ListItemIcon>
-                            <ListItemText primary="WiFi config" />
-                        </ListItem>
-                    </List>
-                </Drawer>
+                {this.renderAppBar()}
+                {this.renderDrawer()}
                 <main className={classes.content}>
                     <div className={classes.toolbar} />
                     {/*this.props.children && React.Children.map(this.props.children, (ch) => <div>{ch}</div>)*/}

@@ -26,7 +26,14 @@ class App extends React.Component {
 
 
     componentDidMount = async () => {
+        
         this.props.apiStore.updateServerState();
+
+        setTimeout(() => {
+            this.props.apiStore.updateWiFiList();
+        }, 1000);
+        
+
         const receiverState = {}
         try{
             const resp = await api.getReceiverState();
@@ -41,6 +48,8 @@ class App extends React.Component {
             console.log({err});
         }
     };
+
+
 
     render() {
         const { gps } = this.state;
