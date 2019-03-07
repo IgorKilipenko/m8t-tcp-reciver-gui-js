@@ -26,13 +26,10 @@ class App extends React.Component {
 
 
     componentDidMount = async () => {
+        this.props.apiStore.updateServerState();
         const receiverState = {}
         try{
-            let resp = await api.getServerInfo();
-            console.log({serverStart:resp.data.server_time})
-            receiverState.serverStart = Date.now() - resp.data.server_time;
-
-            resp = await api.getReceiverState();
+            const resp = await api.getReceiverState();
             receiverState.enabled = resp.data.enabled;
             if (receiverState.enabled){
                 receiverState.timeStart = resp.data.timeStart;

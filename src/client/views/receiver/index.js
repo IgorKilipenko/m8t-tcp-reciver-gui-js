@@ -23,7 +23,6 @@ const styles = theme => ({
 @observer
 class ReceiverView extends React.Component {
     state = {
-        //enabled: false,
         timeReceive: 0
     };
 
@@ -39,14 +38,10 @@ class ReceiverView extends React.Component {
     };
 
     buttonClickHandler = async () => {
+        this.props.apiStore.updateServerState();
         try {
             const { enabled } = this.props.apiStore.receiverState;
             const res = await api.setReceive(!enabled);
-            console.log({ res });
-            //this.setState({
-            //    enabled: res.data.enabled || false,
-            //    timeReceive: 0
-            //});
             const receiverState = {};
             receiverState.enabled = res.data.enabled;
             if (res.data.enabled) {
