@@ -31,16 +31,16 @@ export default class ApiSocket {
         return this.query({
             component: this.components.wifi,
             type: this.types.query,
-            cmd: "scan"
-        })
+            cmd: 'scan'
+        });
     };
 
     getWifiInfo = () => {
         return this.query({
             component: this.components.wifi,
             type: this.types.query,
-            cmd: "info"
-        })
+            cmd: 'info'
+        });
     };
 
     //connectWiFiSTA = (ssid, password) => {
@@ -73,22 +73,33 @@ export default class ApiSocket {
             cmd: 'connect',
             ssid,
             password
-        })
+        });
     };
 
     getReceiverState = () => {
         return this.query({
             component: this.components.receiver,
             type: this.types.query,
-            cmd: "state"
-        })
+            cmd: 'state'
+        });
     };
 
-    setReceive = enable => {
-        return this.action({
+    setReceive = (enable, writeToSd = null, sendToTcp = null) => {
+        const options = {
             component: this.components.receiver,
             cmd: enable ? 'start' : 'stop'
-        })
+        };
+        if (enable) {
+            if (writeToSd != null) {
+                options.writeToSd = writeToSd;
+            }
+
+            if (sendToTcp != null) {
+                options.sendToTcp = sendToTcp;
+            }
+        }
+
+        return this.action(options);
     };
 
     getServerInfo = () => {
@@ -115,7 +126,13 @@ export default class ApiSocket {
                     }
                 });
                 if (resp.status === 200) {
-                    const {value, req_id, resp_id, error, ...other} = resp.data;
+                    const {
+                        value,
+                        req_id,
+                        resp_id,
+                        error,
+                        ...other
+                    } = resp.data;
                     reslove({
                         data: value,
                         req_id,
@@ -147,5 +164,5 @@ export default class ApiSocket {
         WIFI_AP_STA: 'WIFI_AP_STA',
         WIFI_STA: 'WIFI_STA',
         unknown: 'unknown'
-    }
+    };
 }

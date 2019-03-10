@@ -7,7 +7,9 @@ export default class ApiStore {
     @observable _receiverState = {
         enabled: false,
         timeStart: 0,
-        timeReceive: 0
+        timeReceive: 0,
+        writeToSd: true,
+        sendToTcp: true
     };
     @observable _serverState = {
         serverStart: 0,
@@ -90,8 +92,8 @@ export default class ApiStore {
     async updateServerState() {
         try {
             const res = await api.getServerInfo();
-            this._serverState.serverStart = Date.now() - res.data.server_time;
-            this._serverState.sdSuccess = res.data.sd_success;
+            this._serverState.serverStart = Date.now() - res.data.serverTime;
+            this._serverState.sdSuccess = res.data.sdSuccess;
             return null;
         } catch (err) {
             return this.sendApiError(err);
@@ -102,12 +104,19 @@ export default class ApiStore {
     async updateReceiverState() {
         try {
             const res = await api.getReceiverState();
-            const { enabled, timeStart, timeReceive } = res.data;
-            this._receiverState = {
+            const { enabled, timeStart, timeReceive, writeToSd, sendToTcp } = res.data;
+            //this._receiverState = {
+            //    enabled,
+            //    timeStart,
+            //    timeReceive
+            //};
+            this.setReceiverState({
                 enabled,
                 timeStart,
-                timeReceive
-            };
+                timeReceive,
+                writeToSd,
+                sendToTcp
+            })
             return null;
         } catch (err) {
             return this.sendApiError(err);

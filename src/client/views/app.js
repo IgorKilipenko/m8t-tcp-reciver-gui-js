@@ -29,25 +29,30 @@ class App extends React.Component {
         
         this.props.apiStore.updateServerState();
 
-        setTimeout(() => {
+        this.timeoutHandler = setTimeout(() => {
             this.props.apiStore.updateWiFiList();
         }, 1000);
         
 
-        const receiverState = {}
-        try{
-            const resp = await api.getReceiverState();
-            receiverState.enabled = resp.data.enabled;
-            if (receiverState.enabled){
-                receiverState.timeStart = resp.data.timeStart;
-            }
-            
-            this.props.apiStore.setReceiverState({...receiverState})
-
-        }catch (err){
-            console.log({err});
-        }
+//      const receiverState = {}
+//      try{
+//          const resp = await api.getReceiverState();
+//          receiverState.enabled = resp.data.enabled;
+//          if (receiverState.enabled){
+//              receiverState.timeStart = resp.data.timeStart;
+//          }
+//          
+//          this.props.apiStore.setReceiverState({...receiverState}//   
+//      }catch (err){
+//          console.log({err});
+//      }
     };
+
+    componentWillUnmount = () => {
+        if (this.timeoutHandler){
+            clearTimeout(this.timeoutHandler)
+        }
+    }
 
 
 
