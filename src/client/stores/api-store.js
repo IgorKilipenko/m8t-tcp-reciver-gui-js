@@ -16,7 +16,10 @@ export default class ApiStore {
 
     @observable _wifiState = {
         list: [],
-        lastUpdate: null
+        lastUpdate: null,
+        wifiMode: api.WiFiModes.unknown,
+        apInfo: null,
+        staInfo: null
     };
 
     @action
@@ -32,15 +35,22 @@ export default class ApiStore {
 
     @action
     setServerState(state) {
-        this.setState(state, this._serverState);
+        if (typeof state == 'function') {
+            state = state(this._serverState);
+        }
+        this._serverState = {
+            ...this._serverState,
+            ...state
+        };
     }
 
-    setState(state, component) {
+    @action
+    setWiFiState(state) {
         if (typeof state == 'function') {
-            state = state(component);
+            state = state(this._wifiState);
         }
-        component = {
-            ...component,
+        this._wifiState = {
+            ...this._wifiState,
             ...state
         };
     }
@@ -53,6 +63,11 @@ export default class ApiStore {
     @computed
     get serverState() {
         return this._serverState;
+    }
+
+    @computed
+    get wifiState() {
+        return this._wifiState;
     }
 
     @computed
@@ -103,8 +118,28 @@ export default class ApiStore {
     async updateWiFiList() {
         try {
             const res = await api.getWifiList();
-            this._wifiState.list = res.data;
-            this._wifiState.lastUpdate = new Date();
+            //this._wifiState.list = res.data;
+            //this._wifiState.lastUpdate = new Date();
+            this.setWiFiState({
+                list: res.data,
+                lastUpdate: new Date()
+            })
+            return null;
+        } catch (err) {
+            return this.sendApiError(err);
+        }
+    }
+
+    @action
+    async updateWiFiInfo() {
+        try {
+            const res = await api.getWifiInfo();
+            this.setWiFiState({
+                wifiMode: res.data.mode || api.WiFiModes.unknown,
+                apInfo: res.data.ap || null,
+                staInfo: res.data.sta || null
+            });
+
             return null;
         } catch (err) {
             return this.sendApiError(err);

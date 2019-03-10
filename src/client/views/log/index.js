@@ -18,19 +18,16 @@ class LogView extends React.Component {
     state = {
         messages: []
     };
+    getMessage = msg => {
+        this.setState(prev => {
+            const messages = [...prev.messages, msg];
+            return { messages };
+        });
+    };
     componentDidMount = () => {
-        serverEvents.onOtaMessage(msg => {
-            this.setState(prev => {
-                const messages = [...prev.otaMessages.slice(1, 9), msg];
-                return { messages };
-            });
-        });
-        serverEvents.onMessage(msg => {
-            this.setState(prev => {
-                const messages = [...prev.messages.slice(1, 9), msg];
-                return { messages };
-            });
-        });
+        console.log('Log mounr');
+        serverEvents.onOtaMessage(this.getMessage);
+        serverEvents.onMessage(this.getMessage);
     };
 
     render() {

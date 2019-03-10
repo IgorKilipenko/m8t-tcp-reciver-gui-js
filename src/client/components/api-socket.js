@@ -4,7 +4,7 @@ export default class ApiSocket {
     constructor() {
         this.instance = axios.create({
             baseURL: DEVELOPMENT ? `http://${REMOTE_API_URL}` : API_URL,
-            timeout: 6000,
+            timeout: 12000,
             method: 'post'
             //maxContentLength: 40000
         });
@@ -35,6 +35,14 @@ export default class ApiSocket {
         })
     };
 
+    getWifiInfo = () => {
+        return this.query({
+            component: this.components.wifi,
+            type: this.types.query,
+            cmd: "info"
+        })
+    };
+
     //connectWiFiSTA = (ssid, password) => {
     //    return new Promise(async (reslove, reject) => {
     //        try {
@@ -61,7 +69,7 @@ export default class ApiSocket {
 
     connectWiFiSTA = (ssid, password) => {
         return this.action({
-            component: this.components.receiver,
+            component: this.components.wifi,
             cmd: 'connect',
             ssid,
             password
@@ -133,4 +141,11 @@ export default class ApiSocket {
         options.type = this.types.action;
         return this.query(options);
     };
+
+    WiFiModes = {
+        WIFI_STA: 'WIFI_STA',
+        WIFI_AP_STA: 'WIFI_AP_STA',
+        WIFI_STA: 'WIFI_STA',
+        unknown: 'unknown'
+    }
 }

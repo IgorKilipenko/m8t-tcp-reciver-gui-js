@@ -17,8 +17,9 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import CellWifiIcon from '@material-ui/icons/CellWifi';
-import SdIcon from '@material-ui/icons/Save';
+import SdIcon from '@material-ui/icons/SdStorage';
 import LogIcon from '@material-ui/icons/Message';
+import StreamIcon from '@material-ui/icons/Input';
 import SpeakerPhoneIcon from '@material-ui/icons/SpeakerPhone';
 import { Link } from 'react-router-dom';
 
@@ -192,6 +193,12 @@ class MiniDrawer extends React.Component {
                         </ListItemIcon>
                         <ListItemText primary="Home" />
                     </ListItem>
+                    <ListItem button key={'stream'} component={Link} to="/stream">
+                        <ListItemIcon>
+                            <StreamIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Stream" />
+                    </ListItem>
                 </List>
                 <Divider />
                 <List>
@@ -206,6 +213,12 @@ class MiniDrawer extends React.Component {
                             <LogIcon />
                         </ListItemIcon>
                         <ListItemText primary="Server logs" />
+                    </ListItem>
+                    <ListItem button key={'storage'} component={Link} to="/storage">
+                        <ListItemIcon>
+                            <SdIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="SD card" />
                     </ListItem>
                 </List>
             </Drawer>

@@ -6,6 +6,10 @@ import Button from '@material-ui/core/Button';
 import ApiSocket from '../../components/api-socket';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
+import Card from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import Typography from '@material-ui/core/Typography';
 
 const api = new ApiSocket();
 
@@ -15,6 +19,10 @@ const styles = theme => ({
     },
     button: {
         margin: theme.spacing.unit
+    },
+    receiverCard: {
+        minWidth: 275,
+        maxWidth: 500
     }
 });
 
@@ -22,24 +30,35 @@ const styles = theme => ({
 @withRouter
 @observer
 class ReceiverView extends React.Component {
-    state = {
-        timeReceive: 0
+    constructor() {
+        super();
+        this.state = {
+            timeReceive: 0
+        };
+        this.recTiemeInterval = null;
+    }
+
+    getTimeReceive = () => {
+        let date = new Date(this.props.apiStore.timeReceive || 0);
+
+        return this.timeToString(date);
     };
 
-    startRecTimeInterval = () => {
-        const interval = setInterval(() => {
-            let date = new Date(this.props.apiStore.timeReceive);
-            date = ('00' + date.getUTCHours()).slice(-2) + ':' + ('00' + date.getUTCMinutes()).slice(-2) + ':' + ('00' + date.getUTCSeconds()).slice(-2) + '.' + ('00' + date.getUTCMilliseconds()).slice(-2);
-            //date.setTime(this.props.apiStore.timeReceive);
-            this.setState(prev => ({
-                timeReceive: date
-            }));
-        }, 1000);
-        return interval;
+    timeToString = date => {
+        return (
+            ('00' + date.getUTCHours()).slice(-2) +
+            ':' +
+            ('00' + date.getUTCMinutes()).slice(-2) +
+            ':' +
+            ('00' + date.getUTCSeconds()).slice(-2)/* +
+            '.' +
+            ('00' + date.getUTCMilliseconds()).slice(-2)*/
+        );
     };
 
     buttonClickHandler = async () => {
         this.props.apiStore.updateServerState();
+        //this.props.apiStore.updateReceiverState();
         try {
             const { enabled } = this.props.apiStore.receiverState;
             const res = await api.setReceive(!enabled);
@@ -48,12 +67,11 @@ class ReceiverView extends React.Component {
             if (res.data.enabled) {
                 receiverState.timeStart = res.data.timeStart;
                 //this.props.apiStore.setReceiverState({ ...receiverState });
-                this.reqInterval = this.startRecTimeInterval();
+                this.startRecTimeInterval();
+
                 //console.log({time:this.props.apiStore.timeReceive})
             } else {
-                if (this.reqInterval) {
-                    clearInterval(this.reqInterval);
-                }
+                this.clearRecTimeInterval();
                 receiverState.timeStart = 0;
                 this.setState({ timeReceive: 0 });
             }
@@ -64,16 +82,19 @@ class ReceiverView extends React.Component {
     };
 
     componentDidMount = async () => {
+        this.setState({
+            timeReceive: this.getTimeReceive()
+        });
         try {
             const resp = await api.getReceiverState();
             //console.log({ res });
             const receiverState = { enabled: resp.data.enabled };
             if (receiverState.enabled) {
                 receiverState.timeStart = resp.data.timeStart;
-                this.reqInterval = this.startRecTimeInterval();
+                this.startRecTimeInterval();
             }
             this.props.apiStore.setReceiverState({ ...receiverState });
-            
+
             //this.setState({ enabled: resp.data.enabled || false });
         } catch (err) {
             console.log({ err }, this);
@@ -81,9 +102,38 @@ class ReceiverView extends React.Component {
     };
 
     componentWillUnmount = () => {
-        if (this.reqInterval) {
-            clearInterval(this.reqInterval);
+        this.clearRecTimeInterval();
+    };
+
+    renderReceiverInfo = classes => {
+        return (
+            <Card className={classes.receiverCard}>
+                <CardContent>
+                    <Typography
+                        className={classes.title}
+                        color="textSecondary"
+                        gutterBottom
+                    >
+                        {`Receiver ip: `}
+                    </Typography>
+                </CardContent>
+            </Card>
+        );
+    };
+
+    clearRecTimeInterval = () => {
+        if (this.recTiemeInterval != null) {
+            clearInterval(this.recTiemeInterval);
         }
+    };
+
+    startRecTimeInterval = (interval = 1000) => {
+        this.clearRecTimeInterval();
+        this.recTiemeInterval = setInterval(() => {
+            this.setState(prev => ({
+                timeReceive: this.getTimeReceive()
+            }));
+        }, interval);
     };
 
     render() {
@@ -91,7 +141,7 @@ class ReceiverView extends React.Component {
         const enabled = this.props.apiStore.receiverState.enabled;
         return (
             <div className={classes.root}>
-                <div>{`Rec time :  ${this.state.timeReceive} sec`}</div>
+                {this.renderReceiverInfo(classes)}
                 <Button
                     variant="outlined"
                     color={enabled ? 'secondary' : 'primary'}
@@ -100,6 +150,14 @@ class ReceiverView extends React.Component {
                 >
                     {enabled ? 'Stop' : 'Start'}
                 </Button>
+                <Typography
+                    className={classes.title}
+                    color="textSecondary"
+                    gutterBottom
+                    inline={true}
+                >
+                    {`Rec time :  ${this.state.timeReceive} sec`}
+                </Typography>
             </div>
         );
     }
