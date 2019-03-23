@@ -1,4 +1,10 @@
 
+const events = {
+    debug: 'logger',
+    ota: 'ota',
+    ubxNav: 'ubxnav'
+}
+
 class ServerEvents {
     constructor() {
         //this.ws = new WebSocket('ws://'+document.location.host+'/ws',['arduino']);
@@ -58,12 +64,25 @@ class ServerEvents {
     }
 
     onOtaMessage = (callback) => {
-        this.es.addEventListener('ota', e => {
+        this.es.addEventListener(events.ota, e => {
             callback(e.data);
         })
     }
+
+    onDebugMessage = (callback) => {
+        this.es.addEventListener(events.debug, e => {
+            callback(e.data);
+        })
+    }
+
+    onUbxNavMessage = (callback) => {
+        this.es.addEventListener(events.ubxNav, e => {
+            callback(e.data);
+        })
+    }
+    
 }
 
 const serverEvents = new ServerEvents();
 
-export {serverEvents}
+export {serverEvents, events}

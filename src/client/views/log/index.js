@@ -1,10 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import { serverEvents } from '../../components/server-events';
+//import { serverEvents } from '../../components/server-events';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import { inject, observer } from 'mobx-react';
+import { withRouter } from 'react-router-dom';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Typography from '@material-ui/core/Typography';
 
 const styles = theme => ({
     root: {
@@ -14,35 +20,56 @@ const styles = theme => ({
     }
 });
 
+@inject('apiStore')
+@inject('serverEventStore')
+@inject('uiStore')
+@withRouter
+@observer
 class LogView extends React.Component {
     state = {
         messages: []
     };
-    getMessage = msg => {
-        this.setState(prev => {
-            const messages = [...prev.messages, msg];
-            return { messages };
-        });
+
+    handleTabChange = (event, value) => {
+        this.props.uiStore.setState({ logView: { activeTab: value } });
     };
-    componentDidMount = () => {
-        console.log('Log mounr');
-        serverEvents.onOtaMessage(this.getMessage);
-        serverEvents.onMessage(this.getMessage);
+    componentDidMount = () => {};
+
+    renderTabContent = (classes, msgs) => {
+        if (msgs.length > 50) {
+            msgs = msgs.slice(msgs.length - 50);
+        }
+        return (
+            <div>
+                {msgs.map((msg, i) => (
+                    <Typography component="div" key={i}>
+                        {msg}
+                    </Typography>
+                ))}
+            </div>
+        );
     };
 
     render() {
-        const { classes } = this.props;
+        const { classes, uiStore } = this.props;
+        const activeTab = uiStore.state.logView.activeTab;
         return (
-            <List className={classes.root}>
-                {this.state.messages.map((msg, i) => (
-                    <ListItem key={i}>
-                        <ListItemText
-                            primary={msg}
-                            secondary={new Date().toDateString()}
-                        />
-                    </ListItem>
-                ))}
-            </List>
+            <div>
+                <Tabs value={activeTab} onChange={this.handleTabChange}>
+                    <Tab label="Server LOG" />
+                    <Tab label="Ublox messages" />
+                </Tabs>
+                {activeTab === 0 &&
+                    this.renderTabContent(
+                        classes,
+                        this.props.serverEventStore.debugMessage
+                    )}
+                {activeTab === 1 &&
+                    this.renderTabContent(
+                        classes,
+                        this.props.serverEventStore.ubxNavMessage
+                    )}
+            </div>
         );
     }
 }

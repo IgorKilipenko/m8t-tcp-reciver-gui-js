@@ -87,24 +87,10 @@ class ReceiverView extends React.Component {
     };
 
     componentDidMount = async () => {
+        this.props.apiStore.updateReceiverState();
         this.setState({
             timeReceive: this.getTimeReceive()
         });
-        //      try {
-        //          const resp = await api.getReceiverState();
-        //          //console.log({ res });
-        //          const receiverState = { enabled: resp.data.enabled };
-        //          if (receiverState.enabled) {
-        //              receiverState.timeStart = resp.data.timeStart;
-        //              this.startRecTimeInterval();
-        //          }
-        //          this.props.apiStore.setReceiverState({ ...receiverState })//
-        //          //this.setState({ enabled: resp.data.enabled || false });
-        //      } catch (err) {
-        //          console.log({ err }, this);
-        //      }
-
-        this.props.apiStore.updateReceiverState();
         if (this.props.apiStore.receiverState.enabled) {
             this.startRecTimeInterval();
         }

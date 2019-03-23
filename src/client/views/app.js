@@ -7,12 +7,14 @@ import MiniDrawer from '../components/root';
 import ApiSocket from '../components/api-socket';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
+import { serverEvents, events as EVENTS } from '../components/server-events';
 
 const api = new ApiSocket();
 
 const styles = theme => ({});
 
 @inject('apiStore')
+@inject('serverEventStore')
 @withRouter
 @observer
 class App extends React.Component {
@@ -24,28 +26,22 @@ class App extends React.Component {
         };
     }
 
+    handleServerEvents = (event, msg) => {
+        this.props.serverEventStore.setMessage(event, msg);
+    }
+
 
     componentDidMount = async () => {
         
         this.props.apiStore.updateServerState();
+        this.props.apiStore.updateReceiverState();
 
         this.timeoutHandler = setTimeout(() => {
             this.props.apiStore.updateWiFiList();
         }, 1000);
-        
 
-//      const receiverState = {}
-//      try{
-//          const resp = await api.getReceiverState();
-//          receiverState.enabled = resp.data.enabled;
-//          if (receiverState.enabled){
-//              receiverState.timeStart = resp.data.timeStart;
-//          }
-//          
-//          this.props.apiStore.setReceiverState({...receiverState}//   
-//      }catch (err){
-//          console.log({err});
-//      }
+        serverEvents.onDebugMessage(msg => this.handleServerEvents(EVENTS.debug, msg));
+        serverEvents.onUbxNavMessage(msg => this.handleServerEvents(EVENTS.ubxNav, msg))
     };
 
     componentWillUnmount = () => {

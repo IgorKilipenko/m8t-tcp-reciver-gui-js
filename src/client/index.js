@@ -8,6 +8,8 @@ import {Router, Switch } from 'react-router-dom';
 import { RouterStore, syncHistoryWithStore } from 'mobx-react-router';
 import createBrowserHistory from 'history/createBrowserHistory';
 import ApiStore from './stores/api-store';
+import UiStore from './stores/ui-store';
+import ServerEventStore from './stores/server-event-store';
 import ScrollRouterStore from './stores/scroll-router-store';
 import routes, {ScrollRouter} from './routes';
 
@@ -20,10 +22,14 @@ const theme = createMuiTheme({
 const browserHistory = createBrowserHistory();
 const scrollRoutingStore = new ScrollRouterStore(routes);
 const apiStore = new ApiStore();
+const serverEventStore = new ServerEventStore();
+const uiStore = new UiStore();
 
 const stores = {
     //routing: scrollRoutingStore,
-    apiStore: apiStore
+    apiStore: apiStore,
+    serverEventStore,
+    uiStore
 };
 //const history = syncHistoryWithStore(browserHistory, scrollRoutingStore);
 ReactDOM.render(
