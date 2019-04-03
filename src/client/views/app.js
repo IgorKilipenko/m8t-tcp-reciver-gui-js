@@ -9,6 +9,8 @@ import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { serverEvents, events as EVENTS } from '../components/server-events';
 
+//import { UbxDecoder, ClassIds, NavMessageIds } from '../model/ublox';
+
 const api = new ApiSocket();
 
 const styles = theme => ({});
@@ -24,33 +26,45 @@ class App extends React.Component {
             gps: {},
             server: {}
         };
+        //this.decoder = new UbxDecoder();
     }
 
     handleServerEvents = (event, msg) => {
         this.props.serverEventStore.setMessage(event, msg);
-    }
-
+    };
 
     componentDidMount = async () => {
-        
         this.props.apiStore.updateServerState();
         this.props.apiStore.updateReceiverState();
 
         this.timeoutHandler = setTimeout(() => {
             this.props.apiStore.updateWiFiList();
-        }, 1000);
+        }, 500);
 
-        serverEvents.onDebugMessage(msg => this.handleServerEvents(EVENTS.debug, msg));
-        serverEvents.onUbxNavMessage(msg => this.handleServerEvents(EVENTS.ubxNav, msg))
+        serverEvents.onDebugMessage(msg =>
+            this.handleServerEvents(EVENTS.debug, msg)
+        );
+        serverEvents.onUbxNavMessage(msg => {
+            console.log('Nav msg');
+            this.handleServerEvents(EVENTS.ubxNav, msg);
+        });
+
+        //this.decoder.on('navMsg', navMsg => {
+        //    console.log('UBX NAV MSG', { navMsg });
+        //});
+        //serverEvents.onWsMessage(data => {
+            //console.log("has data");
+            //data.forEach(byte => {
+            //    this.decoder.inputData(byte);
+            //})
+        //});
     };
 
     componentWillUnmount = () => {
-        if (this.timeoutHandler){
-            clearTimeout(this.timeoutHandler)
+        if (this.timeoutHandler) {
+            clearTimeout(this.timeoutHandler);
         }
-    }
-
-
+    };
 
     render() {
         const { gps } = this.state;
@@ -76,14 +90,17 @@ class App extends React.Component {
                         href="https://fonts.googleapis.com/css?family=Montserrat+Alternates:300,300i,400,400i,500,500i,600,600i&amp;subset=cyrillic"
                         rel="stylesheet"
                     />
-                    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"></link>
+                    <link
+                        rel="stylesheet"
+                        href="https://fonts.googleapis.com/icon?family=Material+Icons"
+                    />
                 </Helmet>
                 <MiniDrawer>
                     {/*<Button onClick={async () => this.sendGnssCmd()}>
                         {gps.enabled ? 'Stop GPS' : 'Start GPS'}
                     </Button>
                     <Button>Тест utf-8</Button>*/}
-                    {this.props.children} 
+                    {this.props.children}
                 </MiniDrawer>
             </div>
         );

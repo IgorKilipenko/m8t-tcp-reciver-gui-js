@@ -6,6 +6,7 @@ export default class ServerEventStore {
     @observable _debugMessage = [];
     @observable _otaMessage = [];
     @observable _ubxNavMessage = [];
+    @observable _receiverData = [];
 
     @action setDebugMessage(msg) {
         this._debugMessage = [...this._debugMessage, msg];
@@ -18,6 +19,7 @@ export default class ServerEventStore {
     @action setUbxNavMessage(msg) {
         this._ubxNavMessage = [...this._ubxNavMessage, msg];
     }
+
 
     @action setMessage(event, msg) {
         if (event === events.debug) {

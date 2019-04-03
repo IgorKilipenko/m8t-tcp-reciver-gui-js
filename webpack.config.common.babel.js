@@ -82,6 +82,7 @@ const baseConfig = {
         }),
         new CleanWebpackPlugin(['dist']),
         new webpack.DefinePlugin({
+            REMOTE_HOST: JSON.stringify('192.168.1.51'),
             REMOTE_API_URL: JSON.stringify('192.168.1.51/api'),
             REMOTE_EVENTS_URL: JSON.stringify('192.168.1.51/events'),
             EVENTS_URL: JSON.stringify('/events'),
