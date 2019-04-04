@@ -7,6 +7,7 @@ const HEADER_BYTES = [181, 98];
 export default class UbxDecoder extends EventEmitter {
     _nbyte = 0;
     _buffer = new ArrayBuffer(MAX_MSG_LEN);
+    _uintBuffer = new Uint8Array(this._buffer);
     _length = 0;
     _allowedClasses = [];
     static _emits = {
@@ -19,7 +20,7 @@ export default class UbxDecoder extends EventEmitter {
 
     inputData = data => {
         //console.log("input");
-        const buffer = new Uint8Array(this._buffer);
+        const buffer = this._uintBuffer;
         if (this._nbyte === 0) {
             this._length = 0;
             if (!this.syncHeader(data, buffer)) {
@@ -33,11 +34,8 @@ export default class UbxDecoder extends EventEmitter {
         buffer[this._nbyte++] = data;
 
         if (this._nbyte === 6) {
-            //const lenView = new DataView(this._buffer, 4, 2);
-            //this._length = lenView.getUint16(0) + 8;
-
             this._length = new Uint16Array(this._buffer, 4, 2)[0] + 8;
-            console.log(`Length = ${this._length}`);
+            //console.log(`Length = ${this._length}`);
             if (this._length > MAX_MSG_LEN) {
                 this._nbyte = 0;
                 return 0;
@@ -58,7 +56,7 @@ export default class UbxDecoder extends EventEmitter {
                             this.emit(UbxDecoder._emits.message, res);
                     }
                 }
-                console.log({res});
+                console.log({ res });
                 return res;
             }
         }
@@ -73,16 +71,14 @@ export default class UbxDecoder extends EventEmitter {
     }
 
     syncHeader = (data, buffer) => {
-        //console.log("Start sync header", new Uint8Array(this._buffer, 0, 1)[0], buffer[0]);
         buffer[0] = buffer[1];
         buffer[1] = data;
-        //console.log("",new Uint8Array(this._buffer, 0, 1)[0], buffer[0]);
 
         return buffer[0] === HEADER_BYTES[0] && buffer[1] === HEADER_BYTES[1];
     };
 
     testChecksum = (buffer, length) => {
-        const ck = new Uint8Array([0,0]);
+        const ck = new Uint8Array([0, 0]);
         const offset = 2;
         const len = length - 2;
 
@@ -91,7 +87,6 @@ export default class UbxDecoder extends EventEmitter {
             ck[0] += buffer[i];
             ck[1] += ck[0];
         }
-        //console.log('checksum', i, ck[0], buffer[length - 2], ck[1], buffer[length - 1]);
         return ck[0] === buffer[length - 2] && ck[1] === buffer[length - 1];
     };
 
@@ -99,40 +94,45 @@ export default class UbxDecoder extends EventEmitter {
         const classId = buffer[2];
         const msgId = buffer[3];
         //     const payload = buffer.subarray(6, length - 3);
-        if (
-            classId === ClassIds.NAV &&
-            msgId === NavMessageIds.POSLLH
-        ) {
-            return this.decodeNavPOSLLHMsg(length - 8);
+        if (classId === ClassIds.NAV && msgId === NavMessageIds.POSLLH) {
+            const payload = new Uint8Array(
+                buffer.subarray(this._payloadOffset, length - 2)
+            );
+            return this.decodeNavPOSLLHMsg(payload, length - 8);
         } else {
             return null;
         }
-
-        //     return {
-        //         classId,
-        //         msgId,
-        //         payload
-        //     };
     };
 
-    decodeNavPOSLLHMsg = length => {
+    decodeNavPOSLLHMsg = (payload, length) => {
         if (length < 28) {
             console.error(`Payload length < 28, length == ${length}`);
             return null;
         }
 
-        const payload = new DataView(this._buffer, 0,  length+8);
+        //console.log(`Payload length == ${payload.length}`, { payload });
+
+        const i4 = new Int32Array(payload.buffer);
+        const u4 = new Uint32Array(payload.buffer);
+
+        const iTOW = u4[0];
+        const longitude = i4[1] / 10000000;
+        const latitude = i4[2] / 10000000;
+        const height = i4[3] / 1000;
+        const heightMSL = i4[4] / 1000;
+        const horizontalAcc = u4[5] / 1000;
+        const verticalAcc = u4[6] / 1000;
 
         return {
             classId: ClassIds.NAV,
             msgId: NavMessageIds.POSLLH,
-            iTOW: payload.getUint32(6+0),
-            longitude: payload.getInt32(6+4),
-            latitude: payload.getInt32(6+8),
-            height: payload.getInt32(6+12) / 1000,
-            heightMSL: payload.getInt32(6+16) / 1000,
-            horizontalAcc: payload.getUint32(6+20) / 1000,
-            verticalAcc: payload.getUint32(6+24) / 1000,
+            iTOW,
+            longitude,
+            latitude,
+            height,
+            heightMSL,
+            horizontalAcc,
+            verticalAcc
         };
     };
 }
