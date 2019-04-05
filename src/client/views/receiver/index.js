@@ -29,6 +29,7 @@ const styles = theme => ({
 });
 
 @inject('apiStore')
+@inject('serverEventStore')
 @withRouter
 @observer
 class ReceiverView extends React.Component {
@@ -64,36 +65,31 @@ class ReceiverView extends React.Component {
         this.props.apiStore.updateServerState();
         try {
             const { enabled } = this.props.apiStore.receiverState;
-            const options = [
-                this.props.apiStore.serverState.sdSuccess,
-                true
-            ]
+            const options = [this.props.apiStore.serverState.sdSuccess, true];
             const res = await api.setReceive(!enabled, ...options);
-            //              const receiverState = {};
-            //              receiverState.enabled = res.data.enabled;
             this.props.apiStore.updateReceiverState();
             if (res.data.enabled) {
-                //          receiverState.timeStart = res.data.timeStart;
                 this.startRecTimeInterval();
             } else {
                 this.clearRecTimeInterval();
-                //          receiverState.timeStart = 0;
-                //          this.setState({ timeReceive: 0 });
             }
-            //              this.props.apiStore.setReceiverState({ ...receiverState });
         } catch (err) {
             console.log({ err }, this);
         }
     };
 
-    componentDidMount = async () => {
+    componentDidMount = () => {
         this.props.apiStore.updateReceiverState();
-        this.setState({
-            timeReceive: this.getTimeReceive()
-        });
-        if (this.props.apiStore.receiverState.enabled) {
-            this.startRecTimeInterval();
-        }
+        setTimeout(() => {
+            this.setState({
+                timeReceive: this.getTimeReceive()
+            });
+            console.log({receiverState:this.props.apiStore.receiverState.enabled})
+            if (this.props.apiStore.receiverState.enabled) {
+                this.startRecTimeInterval();
+            }
+        }, 1000);
+
     };
 
     componentWillUnmount = () => {
@@ -101,7 +97,22 @@ class ReceiverView extends React.Component {
         this.clearRecTimeInterval();
     };
 
+    renderGpsTextField = (label, value) => {
+        const { classes } = this.props;
+        return (
+            <Typography
+                className={classes.title}
+                color="textSecondary"
+                gutterBottom
+            >
+                {`${label}: 
+                    ${value ? value : ''}`}
+            </Typography>
+        );
+    };
+
     renderReceiverInfo = classes => {
+        const sEvents = this.props.serverEventStore;
         return (
             <Card className={classes.receiverCard}>
                 <CardContent>
@@ -112,9 +123,29 @@ class ReceiverView extends React.Component {
                     >
                         {`Receiver ip: `}
                     </Typography>
+                    {sEvents.ubxNavMessage && sEvents.ubxNavMessage.length > 0 && sEvents.ubxNavMessage[0] && (
+                        <div>
+                            {this.renderGpsTextField(
+                                'Longitude',
+                                sEvents.ubxNavMessage[0].longitude.toFixed(8)
+                            )}
+                            {this.renderGpsTextField(
+                                'latitude',
+                                sEvents.ubxNavMessage[0].latitude.toFixed(8)
+                            )}
+                            {this.renderGpsTextField(
+                                'height',
+                                sEvents.ubxNavMessage[0].height.toFixed(3)
+                            )}
+                        </div>
+                    )}
                 </CardContent>
                 <CardActions>
-                    <IconButton color="primary" className={classes.button} disabled={!this.props.apiStore.serverState.sdSuccess}>
+                    <IconButton
+                        color="primary"
+                        className={classes.button}
+                        disabled={!this.props.apiStore.serverState.sdSuccess}
+                    >
                         <SdIcon />
                     </IconButton>
                 </CardActions>

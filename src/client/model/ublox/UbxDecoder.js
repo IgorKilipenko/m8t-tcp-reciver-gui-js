@@ -19,7 +19,6 @@ export default class UbxDecoder extends EventEmitter {
     _payloadOffset = 6;
 
     inputData = data => {
-        //console.log("input");
         const buffer = this._uintBuffer;
         if (this._nbyte === 0) {
             this._length = 0;
@@ -35,7 +34,6 @@ export default class UbxDecoder extends EventEmitter {
 
         if (this._nbyte === 6) {
             this._length = new Uint16Array(this._buffer, 4, 2)[0] + 8;
-            //console.log(`Length = ${this._length}`);
             if (this._length > MAX_MSG_LEN) {
                 this._nbyte = 0;
                 return 0;
@@ -43,7 +41,6 @@ export default class UbxDecoder extends EventEmitter {
         }
 
         if (this._nbyte == this._length) {
-            console.log('Msg complite');
             this._nbyte = 0;
             if (this.testChecksum(buffer, this._length)) {
                 const res = this.decode(buffer, this._length);
@@ -56,7 +53,6 @@ export default class UbxDecoder extends EventEmitter {
                             this.emit(UbxDecoder._emits.message, res);
                     }
                 }
-                console.log({ res });
                 return res;
             }
         }

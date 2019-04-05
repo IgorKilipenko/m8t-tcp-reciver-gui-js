@@ -102,7 +102,7 @@ export default class ApiSocket {
         return this.action(options);
     };
 
-    getServerInfo = () => {
+    getServerInfo = async () => {
         return this.query({
             component: this.components.server,
             type: this.types.query,
@@ -111,8 +111,9 @@ export default class ApiSocket {
     };
 
     query = options => {
-        const { component, type = this.types.query, cmd, ...args } = options;
+        
         return new Promise(async (reslove, reject) => {
+            const { component, type = this.types.query, cmd, ...args } = options;
             try {
                 const resp = await this.instance({
                     method: 'post',

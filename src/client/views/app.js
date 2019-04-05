@@ -33,7 +33,7 @@ class App extends React.Component {
         this.props.serverEventStore.setMessage(event, msg);
     };
 
-    componentDidMount = async () => {
+    componentDidMount = () => {
         this.props.apiStore.updateServerState();
         this.props.apiStore.updateReceiverState();
 
@@ -45,7 +45,7 @@ class App extends React.Component {
             this.handleServerEvents(EVENTS.debug, msg)
         );
         serverEvents.onUbxNavMessage(msg => {
-            console.log('Nav msg');
+            //console.log('Nav msg');
             this.handleServerEvents(EVENTS.ubxNav, msg);
         });
 

@@ -112,7 +112,7 @@ class ServerEvents extends EventEmitter {
                 const buf = new Uint8Array(e.data);
                 buf.forEach(b => {
                     const res = this.decoder.inputData(b);
-                    if (res && res.classId == ClassIds.NAV){
+                    if (res && res.classId === ClassIds.NAV){
                         callback(res);
                     }
                 })
@@ -127,7 +127,7 @@ class ServerEvents extends EventEmitter {
                 buf.forEach( b => {
                     const res = this.decoder.inputData(b);
                     if (res && res.classId == ClassIds.NAV){
-                        callback("Has NAV MSG");
+                        callback(res);
                     }
                 })
                 

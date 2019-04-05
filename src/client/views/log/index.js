@@ -64,11 +64,11 @@ class LogView extends React.Component {
                         classes,
                         this.props.serverEventStore.debugMessage
                     )}
-                {activeTab === 1 &&
+                {/*activeTab === 1 &&
                     this.renderTabContent(
                         classes,
                         this.props.serverEventStore.ubxNavMessage
-                    )}
+                    )*/}
             </div>
         );
     }

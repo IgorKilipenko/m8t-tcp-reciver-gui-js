@@ -103,6 +103,9 @@ export default class ApiStore {
     @action
     async updateReceiverState() {
         try {
+            if (this._receiverState && this._receiverState.lastUpdate && new Date() - this._receiverState.lastUpdate < 1000){
+                return this.sendApiWarn("Small time interval");
+            }
             const res = await api.getReceiverState();
             const { enabled, timeStart, timeReceive, writeToSd, sendToTcp } = res.data;
             //this._receiverState = {
@@ -115,7 +118,8 @@ export default class ApiStore {
                 timeStart,
                 timeReceive,
                 writeToSd,
-                sendToTcp
+                sendToTcp,
+                lastUpdate: new Date()
             })
             return null;
         } catch (err) {
@@ -126,6 +130,9 @@ export default class ApiStore {
     @action
     async updateWiFiList() {
         try {
+            if (this._wifiState && this._wifiState.lastUpdate && new Date() - this._wifiState.lastUpdate < 1000){
+                return this.sendApiWarn("Small time interval");
+            }
             const res = await api.getWifiList();
             //this._wifiState.list = res.data;
             //this._wifiState.lastUpdate = new Date();
@@ -158,6 +165,15 @@ export default class ApiStore {
     sendApiError = err => {
         console.error('Error {ApiStore} get server state', {
             err,
+            sender: this
+        });
+
+        return err;
+    };
+
+    sendApiWarn = warn => {
+        console.warn('Warn {ApiStore} get server state', {
+            warn,
             sender: this
         });
 
