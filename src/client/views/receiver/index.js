@@ -12,6 +12,7 @@ import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import SdIcon from '@material-ui/icons/SdStorage';
 import IconButton from '@material-ui/core/IconButton';
+import GoogleMap from '../../components/Map';
 
 const api = new ApiSocket();
 
@@ -137,8 +138,10 @@ class ReceiverView extends React.Component {
                                 'height',
                                 sEvents.ubxNavMessage[0].height.toFixed(3)
                             )}
+                            <GoogleMap center={{lng:sEvents.ubxNavMessage[0].longitude, lat: sEvents.ubxNavMessage[0].latitude}}/>
                         </div>
                     )}
+                    
                 </CardContent>
                 <CardActions>
                     <IconButton

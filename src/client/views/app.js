@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
 import { withStyles } from '@material-ui/core/styles';
@@ -53,10 +53,10 @@ class App extends React.Component {
         //    console.log('UBX NAV MSG', { navMsg });
         //});
         //serverEvents.onWsMessage(data => {
-            //console.log("has data");
-            //data.forEach(byte => {
-            //    this.decoder.inputData(byte);
-            //})
+        //console.log("has data");
+        //data.forEach(byte => {
+        //    this.decoder.inputData(byte);
+        //})
         //});
     };
 

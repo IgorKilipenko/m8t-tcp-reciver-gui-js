@@ -5,6 +5,7 @@ import autoprefixer from 'autoprefixer';
 import precss from 'precss';
 import path from 'path';
 import { merge } from 'rxjs';
+import {API_KEY} from './user-config';
 
 const host = 'localhost';
 const port = 3001;
@@ -88,7 +89,8 @@ const baseConfig = {
             EVENTS_URL: JSON.stringify('/events'),
             API_URL: JSON.stringify('/api'),
             HOST: JSON.stringify('localhost'),
-            PORT: JSON.stringify(80)
+            PORT: JSON.stringify(80),
+            API_KEY: JSON.stringify(API_KEY)
         })
     ]
 };
