@@ -4,7 +4,7 @@ import CleanWebpackPlugin from 'clean-webpack-plugin';
 import autoprefixer from 'autoprefixer';
 import precss from 'precss';
 import path from 'path';
-import { merge } from 'rxjs';
+//import { merge } from 'rxjs';
 import {API_KEY} from './user-config';
 
 const host = 'localhost';
@@ -83,9 +83,9 @@ const baseConfig = {
         }),
         new CleanWebpackPlugin(['dist']),
         new webpack.DefinePlugin({
-            REMOTE_HOST: JSON.stringify('192.168.1.51'),
-            REMOTE_API_URL: JSON.stringify('192.168.1.51/api'),
-            REMOTE_EVENTS_URL: JSON.stringify('192.168.1.51/events'),
+            REMOTE_HOST: JSON.stringify('192.168.1.41'),
+            REMOTE_API_URL: JSON.stringify('192.168.1.41/api'),
+            REMOTE_EVENTS_URL: JSON.stringify('192.168.1.41/events'),
             EVENTS_URL: JSON.stringify('/events'),
             API_URL: JSON.stringify('/api'),
             HOST: JSON.stringify('localhost'),

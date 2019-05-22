@@ -9,6 +9,7 @@ import { withRouter } from 'react-router-dom';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
+import CardMedia from '@material-ui/core/CardMedia';
 import Typography from '@material-ui/core/Typography';
 import SdIcon from '@material-ui/icons/SdStorage';
 import IconButton from '@material-ui/core/IconButton';
@@ -20,12 +21,17 @@ const styles = theme => ({
     root: {
         //display: 'flex'
     },
+    details: {
+        display: 'flex',
+        flexDirection: 'column'
+    },
     button: {
         margin: theme.spacing.unit
     },
     receiverCard: {
         minWidth: 275,
-        maxWidth: 500
+        maxWidth: 500,
+        flexDirection: 'row'
     }
 });
 
@@ -85,12 +91,13 @@ class ReceiverView extends React.Component {
             this.setState({
                 timeReceive: this.getTimeReceive()
             });
-            console.log({receiverState:this.props.apiStore.receiverState.enabled})
+            console.log({
+                receiverState: this.props.apiStore.receiverState.enabled
+            });
             if (this.props.apiStore.receiverState.enabled) {
                 this.startRecTimeInterval();
             }
         }, 1000);
-
     };
 
     componentWillUnmount = () => {
@@ -114,6 +121,10 @@ class ReceiverView extends React.Component {
 
     renderReceiverInfo = classes => {
         const sEvents = this.props.serverEventStore;
+        const hasGpsData =
+            sEvents.ubxNavMessage &&
+            sEvents.ubxNavMessage.length > 0 &&
+            sEvents.ubxNavMessage[0];
         return (
             <Card className={classes.receiverCard}>
                 <CardContent>
@@ -124,24 +135,32 @@ class ReceiverView extends React.Component {
                     >
                         {`Receiver ip: `}
                     </Typography>
-                    {sEvents.ubxNavMessage && sEvents.ubxNavMessage.length > 0 && sEvents.ubxNavMessage[0] && (
+                    {hasGpsData && (
                         <div>
-                            {this.renderGpsTextField(
-                                'Longitude',
-                                sEvents.ubxNavMessage[0].longitude.toFixed(8)
-                            )}
-                            {this.renderGpsTextField(
-                                'latitude',
-                                sEvents.ubxNavMessage[0].latitude.toFixed(8)
-                            )}
-                            {this.renderGpsTextField(
-                                'height',
-                                sEvents.ubxNavMessage[0].height.toFixed(3)
-                            )}
-                            <GoogleMap center={{lng:sEvents.ubxNavMessage[0].longitude, lat: sEvents.ubxNavMessage[0].latitude}}/>
+                            <div>
+                                {this.renderGpsTextField(
+                                    'Longitude',
+                                    sEvents.ubxNavMessage[0].longitude.toFixed(
+                                        8
+                                    )
+                                )}
+                                {this.renderGpsTextField(
+                                    'latitude',
+                                    sEvents.ubxNavMessage[0].latitude.toFixed(8)
+                                )}
+                                {this.renderGpsTextField(
+                                    'height',
+                                    sEvents.ubxNavMessage[0].height.toFixed(3)
+                                )}
+                                <GoogleMap
+                                    center={{
+                                        lng: sEvents.ubxNavMessage[0].longitude,
+                                        lat: sEvents.ubxNavMessage[0].latitude
+                                    }}
+                                />
+                            </div>
                         </div>
                     )}
-                    
                 </CardContent>
                 <CardActions>
                     <IconButton
