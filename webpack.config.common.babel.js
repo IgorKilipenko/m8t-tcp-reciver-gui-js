@@ -81,7 +81,7 @@ const baseConfig = {
         new webpack.LoaderOptionsPlugin({
             options: { postcss: [precss, autoprefixer] }
         }),
-        new CleanWebpackPlugin(['dist']),
+        new CleanWebpackPlugin(),
         new webpack.DefinePlugin({
             REMOTE_HOST: JSON.stringify('192.168.1.41'),
             REMOTE_API_URL: JSON.stringify('192.168.1.41/api'),
