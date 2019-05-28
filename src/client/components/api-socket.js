@@ -21,7 +21,8 @@ export default class ApiSocket {
         this.components = {
             receiver: 'receiver',
             wifi: 'wifi',
-            server: 'server'
+            server: 'server',
+            ntrip: 'ntrip'
         };
 
         console.log({ baseUrl: this.instance.baseURL });
@@ -101,6 +102,13 @@ export default class ApiSocket {
 
         return this.action(options);
     };
+
+    setNtripClient = (enable) => {
+        return this.action({
+            component: this.components.ntrip,
+            cmd: enable ? 'start' : 'stop'
+        })
+    }
 
     getServerInfo = async () => {
         return this.query({
