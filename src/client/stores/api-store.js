@@ -11,6 +11,14 @@ export default class ApiStore {
         writeToSd: true,
         sendToTcp: true
     };
+    @observable _ntripState = {
+        enabled: false,
+        timeStart: 0,
+        timeReceive: 0,
+        host: '',
+        port: '',
+        mntpnt: '',
+    };
     @observable _serverState = {
         serverStart: 0,
         sdSuccess: false
@@ -33,6 +41,44 @@ export default class ApiStore {
             ...this._receiverState,
             ...state
         };
+    }
+
+    @action
+    setNtripState(state) {
+        if (typeof state == 'function') {
+            state = state(this._ntripState);
+        }
+        this._ntripState = {
+            ...this._ntripState,
+            ...state
+        };
+    }
+
+    @computed
+    get ntripState() {
+        return this._ntripState;
+    }
+
+    @action
+    async updateNtripState() {
+        try {
+            const res = await api.getNtripState();
+            console.debug({res});
+            if (res && res.data){
+                this._ntripState.enabled = res.data.enabled;
+                return null;
+            }
+        } catch (err) {
+            return this.sendApiError(err);
+        }
+    }
+
+    @action
+    async ntripAction(enable, options) {
+        const res = await api.setNtripClient(enable, options);
+        if (res && res.data){
+            setNtripState(res.data);
+        }
     }
 
     @action
@@ -61,6 +107,8 @@ export default class ApiStore {
     get receiverState() {
         return this._receiverState;
     }
+
+
 
     @computed
     get serverState() {
@@ -127,6 +175,8 @@ export default class ApiStore {
         }
     }
 
+
+
     @action
     async updateWiFiList() {
         try {
@@ -179,4 +229,8 @@ export default class ApiStore {
 
         return err;
     };
+
+    get api() {
+        return api;
+    }
 }

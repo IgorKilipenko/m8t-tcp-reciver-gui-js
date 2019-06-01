@@ -6,7 +6,7 @@ import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import { Provider } from 'mobx-react';
 import {Router, Switch } from 'react-router-dom';
 import { RouterStore, syncHistoryWithStore } from 'mobx-react-router';
-import createBrowserHistory from 'history/createBrowserHistory';
+import {createBrowserHistory} from 'history';
 import ApiStore from './stores/api-store';
 import UiStore from './stores/ui-store';
 import ServerEventStore from './stores/server-event-store';

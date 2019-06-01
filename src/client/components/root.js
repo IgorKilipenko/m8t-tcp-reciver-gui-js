@@ -18,10 +18,13 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import CellWifiIcon from '@material-ui/icons/CellWifi';
 import SdIcon from '@material-ui/icons/SdStorage';
+import SignalCellularAlt from '@material-ui/icons/SignalCellularAlt';
 import LogIcon from '@material-ui/icons/Message';
 import StreamIcon from '@material-ui/icons/Input';
 import SpeakerPhoneIcon from '@material-ui/icons/SpeakerPhone';
 import { Link } from 'react-router-dom';
+
+import {CorrectionsView} from '../views';
 
 import axios from 'axios';
 
@@ -219,6 +222,12 @@ class MiniDrawer extends React.Component {
                             <SdIcon />
                         </ListItemIcon>
                         <ListItemText primary="SD card" />
+                    </ListItem>
+                    <ListItem button key={CorrectionsView.routeInfo.name} component={Link} to={CorrectionsView.routeInfo.path}>
+                        <ListItemIcon>
+                            <CorrectionsView.icons.main/>
+                        </ListItemIcon>
+                        <ListItemText primary="Input corrections" />
                     </ListItem>
                 </List>
             </Drawer>

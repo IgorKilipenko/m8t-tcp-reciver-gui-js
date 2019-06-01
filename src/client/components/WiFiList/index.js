@@ -10,7 +10,6 @@ import Switch from '@material-ui/core/Switch';
 import WifiIcon from '@material-ui/icons/Wifi';
 import LoginDialog from '../LoginDialog';
 import ApiSocket from '../api-socket';
-import { async } from 'q';
 
 const apiSocket = new ApiSocket();
 

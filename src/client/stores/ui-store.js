@@ -5,6 +5,9 @@ export default class UiStore{
     @observable _state = {
         logView: {
             activeTab : 0,
+        },
+        corrections: {
+            enabled :false
         }
     }
 

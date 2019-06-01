@@ -9,6 +9,7 @@ import {API_KEY} from './user-config';
 
 const host = 'localhost';
 const port = 3001;
+const remoteDebugHost = '192.168.1.58';
 
 const baseConfig = {
     entry: ['./src/client/index.js'],
@@ -83,9 +84,9 @@ const baseConfig = {
         }),
         new CleanWebpackPlugin(),
         new webpack.DefinePlugin({
-            REMOTE_HOST: JSON.stringify('192.168.1.58'),
-            REMOTE_API_URL: JSON.stringify('192.168.1.58/api'),
-            REMOTE_EVENTS_URL: JSON.stringify('192.168.1.58/events'),
+            REMOTE_HOST: JSON.stringify(remoteDebugHost),
+            REMOTE_API_URL: JSON.stringify(`${remoteDebugHost}/api`),
+            REMOTE_EVENTS_URL: JSON.stringify(`${remoteDebugHost}/events`),
             EVENTS_URL: JSON.stringify('/events'),
             API_URL: JSON.stringify('/api'),
             HOST: JSON.stringify('localhost'),

@@ -28,6 +28,22 @@ export default class ApiSocket {
         console.log({ baseUrl: this.instance.baseURL });
     }
 
+    setNtripClient = enable => {
+        return this.action({
+            component: this.components.ntrip,
+            cmd: enable ? 'start' : 'stop',
+            mntpnt: "NVSB3_2"
+        });
+    };
+
+    getNtripState = async () => {
+        return this.query({
+            component: this.components.ntrip,
+            type: this.types.query,
+            cmd: 'state'
+        });
+    };
+
     getWifiList = () => {
         return this.query({
             component: this.components.wifi,
@@ -103,13 +119,6 @@ export default class ApiSocket {
         return this.action(options);
     };
 
-    setNtripClient = (enable) => {
-        return this.action({
-            component: this.components.ntrip,
-            cmd: enable ? 'start' : 'stop'
-        })
-    }
-
     getServerInfo = async () => {
         return this.query({
             component: this.components.server,
@@ -119,9 +128,13 @@ export default class ApiSocket {
     };
 
     query = options => {
-        
         return new Promise(async (reslove, reject) => {
-            const { component, type = this.types.query, cmd, ...args } = options;
+            const {
+                component,
+                type = this.types.query,
+                cmd,
+                ...args
+            } = options;
             try {
                 const resp = await this.instance({
                     method: 'post',

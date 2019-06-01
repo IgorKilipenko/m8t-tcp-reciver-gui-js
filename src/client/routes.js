@@ -5,6 +5,7 @@ import App from './views/app';
 import WiFiConfigView from './views/wifi-config';
 import LogView from './views/log';
 import StreamView from './views/stream';
+import CorrectionsView from './views/corrections';
 //import ProductInfo from './views/product-info/product-info';
 //import Products from './views/products/products';
 //import Contacts from '../client/views/contacts/contacts';
@@ -44,6 +45,12 @@ const routes = [
                 component: StreamView,
                 isScrollRoute: false
             },
+            {
+                name: CorrectionsView.routeInfo.name,
+                path: CorrectionsView.routeInfo.path,
+                component: CorrectionsView,
+                isScrollRoute: false
+            }
         ]
     }
 ]
