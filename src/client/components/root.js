@@ -1,5 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { inject, observer } from 'mobx-react';
+import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -24,7 +26,7 @@ import StreamIcon from '@material-ui/icons/Input';
 import SpeakerPhoneIcon from '@material-ui/icons/SpeakerPhone';
 import { Link } from 'react-router-dom';
 
-import {CorrectionsView} from '../views';
+import { CorrectionsView } from '../views';
 
 import axios from 'axios';
 
@@ -104,20 +106,19 @@ const styles = theme => ({
     }
 });
 
+@inject('apiStore')
+@inject('uiStore')
+@withRouter
+@observer
 class MiniDrawer extends React.Component {
     state = {
         open: false,
-        status: ''
-        //data: [
-        //    {
-        //        '1': 'rssi',
-        //        '2': 'ssid',
-        //        '3': 'bssid',
-        //        '4': 'channel',
-        //        '5': 'secure',
-        //        '6': 'hidden'
-        //    }
-        //]
+        status: '',
+        pathname: null
+    };
+
+    componentDidMount = () => {
+        console.debug({ props: this.props });
     };
 
     handleDrawerOpen = () => {
@@ -130,6 +131,7 @@ class MiniDrawer extends React.Component {
 
     renderAppBar = () => {
         const { classes, theme } = this.props;
+        const { pathname } = this.props.location;
         return (
             <AppBar
                 position="fixed"
@@ -163,7 +165,8 @@ class MiniDrawer extends React.Component {
     };
 
     renderDrawer = () => {
-        const { classes, theme } = this.props;
+        const { classes, theme, apiStore } = this.props;
+        const { pathname } = this.props.location;
         return (
             <Drawer
                 variant="permanent"
@@ -190,13 +193,24 @@ class MiniDrawer extends React.Component {
                 </div>
                 <Divider />
                 <List>
+
+                    {/*=================== Home =======================*/}
                     <ListItem button key={1} component={Link} to="/">
                         <ListItemIcon>
                             <SpeakerPhoneIcon />
                         </ListItemIcon>
                         <ListItemText primary="Home" />
+                        selected={pathname === '/'}
                     </ListItem>
-                    <ListItem button key={'stream'} component={Link} to="/stream">
+
+                    {/*=================== StreamView =======================*/}
+                    <ListItem
+                        button
+                        key={'stream'}
+                        component={Link}
+                        to="/stream"
+                        selected={pathname === '/stream'}
+                    >
                         <ListItemIcon>
                             <StreamIcon />
                         </ListItemIcon>
@@ -204,28 +218,66 @@ class MiniDrawer extends React.Component {
                     </ListItem>
                 </List>
                 <Divider />
+
+                {/*=================== Menu =======================*/}
                 <List>
-                    <ListItem button key={'wifi_config'} component={Link} to="/wifi_config">
+
+                    {/*               WifiView               */}
+                    <ListItem
+                        button
+                        key={'wifi_config'}
+                        component={Link}
+                        to="/wifi_config"
+                        selected={pathname === '/wifi_config'}
+                    >
                         <ListItemIcon>
                             <CellWifiIcon />
                         </ListItemIcon>
                         <ListItemText primary="WiFi config" />
                     </ListItem>
-                    <ListItem button key={'log'} component={Link} to="/log">
+
+                    {/*               LogView               */}
+                    <ListItem
+                        button
+                        key={'log'}
+                        component={Link}
+                        to="/log"
+                        selected={pathname === '/log'}
+                    >
                         <ListItemIcon>
                             <LogIcon />
                         </ListItemIcon>
                         <ListItemText primary="Server logs" />
                     </ListItem>
-                    <ListItem button key={'storage'} component={Link} to="/storage">
+
+                    {/*               StorageView               */}
+                    <ListItem
+                        button
+                        key={'storage'}
+                        component={Link}
+                        to="/storage"
+                        selected={pathname === '/storage'}
+                    >
                         <ListItemIcon>
                             <SdIcon />
                         </ListItemIcon>
                         <ListItemText primary="SD card" />
                     </ListItem>
-                    <ListItem button key={CorrectionsView.routeInfo.name} component={Link} to={CorrectionsView.routeInfo.path}>
+
+                    {/*           CorrectionsView                 */}
+                    <ListItem
+                        button
+                        key={CorrectionsView.routeInfo.name}
+                        component={Link}
+                        to={CorrectionsView.routeInfo.path}
+                        selected={CorrectionsView.routeInfo.path === pathname}
+                    >
                         <ListItemIcon>
-                            <CorrectionsView.icons.main/>
+                            <CorrectionsView.icons.main
+                                {...(this.props.apiStore.ntripState.enabled
+                                    ? { color: 'secondary' }
+                                    : {})}
+                            />
                         </ListItemIcon>
                         <ListItemText primary="Input corrections" />
                     </ListItem>

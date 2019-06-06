@@ -7,6 +7,8 @@ import { withRouter } from 'react-router-dom';
 import NtripClient from '../../components/NtripClient';
 import SignalCellularAlt from '@material-ui/icons/SignalCellularAlt';
 
+import { NTRIP_CLIENT_DEF as userConfig } from '../../../../user-config';
+
 const styles = theme => ({
     root: {
         display: 'flex'
@@ -26,28 +28,54 @@ const styles = theme => ({
 class CorrectionsView extends React.Component {
     static icons = {
         main: SignalCellularAlt
-    }
-        
-    static routeInfo = {
-        path:'/corrections',
-        name:'corrections'
-    }
-    handlerNtripConnect = async () => {
-        const res = await this.props.apiStore.api.setNtripClient(true);
-        this.props.apiStore.updateNtripState();
     };
-    handlerNtripDisconnect = async () => {
-        const res = await this.props.apiStore.api.setNtripClient(false);
-        this.props.apiStore.updateNtripState();
+
+    static routeInfo = {
+        path: '/corrections',
+        name: 'corrections'
+    };
+
+    ntripConnInfo = userConfig;
+
+    handlerNtripConnect = async ntripOptions => {
+        const res = this.props.apiStore.ntripAction(true, ntripOptions);
+        //this.props.apiStore.updateNtripState();
+        if (!localStorage) {
+            console.warn('localStorage is null');
+        } else if (res && res.data && res.data.enabled) {
+            const json = JSON.stringify(this.state.ntripClient);
+            localStorage.setItem('ntripClient', json);
+        }
+    };
+    handlerNtripDisconnect = async ntripOptions => {
+        this.props.apiStore.ntripAction(false, ntripOptions);
+        //this.props.apiStore.updateNtripState();
     };
 
     componentDidMount = () => {
         this.props.apiStore.updateNtripState();
-    }
+        if (!localStorage) {
+            console.warn('localStorage is null');
+        } else {
+            const json = localStorage.getItem('ntripClient');
+            console.debug({json});
+            if (json) {
+                try {
+                    this.ntripConnInfo = JSON.parse(json);
+                    console.debug({ connectionInfo: this.ntripConnInfo});
+                } catch (err) {
+                    console.warn(err);
+                }
+            }
+            if (!this.ntripConnInfo) {
+                this.ntripConnInfo = userConfig;
+            }
+        }
+    };
 
     render() {
         const { classes } = this.props;
-        console.debug({NTRIP:this.props.apiStore.ntripState.enabled})
+        console.debug({ NTRIP: this.props.apiStore.ntripState.enabled });
         return (
             <div className={classes.root}>
                 <NtripClient
@@ -55,6 +83,7 @@ class CorrectionsView extends React.Component {
                     open={true}
                     handleConnect={this.handlerNtripConnect}
                     handleDisconnect={this.handlerNtripDisconnect}
+                    connectionInfo={this.ntripConnInfo}
                 />
             </div>
         );

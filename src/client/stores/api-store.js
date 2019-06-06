@@ -17,7 +17,7 @@ export default class ApiStore {
         timeReceive: 0,
         host: '',
         port: '',
-        mntpnt: '',
+        mountPoint: ''
     };
     @observable _serverState = {
         serverStart: 0,
@@ -63,22 +63,28 @@ export default class ApiStore {
     async updateNtripState() {
         try {
             const res = await api.getNtripState();
-            console.debug({res});
-            if (res && res.data){
+            console.debug({ res });
+            if (res && res.data) {
                 this._ntripState.enabled = res.data.enabled;
                 return null;
             }
         } catch (err) {
-            return this.sendApiError(err);
+            return this.sendApiError(err, api.components.ntrip);
         }
     }
 
     @action
     async ntripAction(enable, options) {
-        const res = await api.setNtripClient(enable, options);
-        if (res && res.data){
-            setNtripState(res.data);
+        try {
+            const res = await api.setNtripClient(enable, options);
+            if (res && res.data) {
+                this.setNtripState(res.data);
+                return res;
+            }
+        } catch (err) {
+            return this.sendApiError(err, api.components.ntrip);
         }
+        return null;
     }
 
     @action
@@ -107,8 +113,6 @@ export default class ApiStore {
     get receiverState() {
         return this._receiverState;
     }
-
-
 
     @computed
     get serverState() {
@@ -144,18 +148,28 @@ export default class ApiStore {
             this._serverState.sdSuccess = res.data.sdSuccess;
             return null;
         } catch (err) {
-            return this.sendApiError(err);
+            return this.sendApiError(err, api.components.server);
         }
     }
 
     @action
     async updateReceiverState() {
         try {
-            if (this._receiverState && this._receiverState.lastUpdate && new Date() - this._receiverState.lastUpdate < 1000){
-                return this.sendApiWarn("Small time interval");
+            if (
+                this._receiverState &&
+                this._receiverState.lastUpdate &&
+                new Date() - this._receiverState.lastUpdate < 1000
+            ) {
+                return this.sendApiWarn('Small time interval');
             }
             const res = await api.getReceiverState();
-            const { enabled, timeStart, timeReceive, writeToSd, sendToTcp } = res.data;
+            const {
+                enabled,
+                timeStart,
+                timeReceive,
+                writeToSd,
+                sendToTcp
+            } = res.data;
             //this._receiverState = {
             //    enabled,
             //    timeStart,
@@ -168,20 +182,22 @@ export default class ApiStore {
                 writeToSd,
                 sendToTcp,
                 lastUpdate: new Date()
-            })
+            });
             return null;
         } catch (err) {
-            return this.sendApiError(err);
+            return this.sendApiError(err, api.components.receiver);
         }
     }
-
-
 
     @action
     async updateWiFiList() {
         try {
-            if (this._wifiState && this._wifiState.lastUpdate && new Date() - this._wifiState.lastUpdate < 1000){
-                return this.sendApiWarn("Small time interval");
+            if (
+                this._wifiState &&
+                this._wifiState.lastUpdate &&
+                new Date() - this._wifiState.lastUpdate < 1000
+            ) {
+                return this.sendApiWarn('Small time interval');
             }
             const res = await api.getWifiList();
             //this._wifiState.list = res.data;
@@ -189,10 +205,10 @@ export default class ApiStore {
             this.setWiFiState({
                 list: res.data,
                 lastUpdate: new Date()
-            })
+            });
             return null;
         } catch (err) {
-            return this.sendApiError(err);
+            return this.sendApiError(err, api.components.wifi);
         }
     }
 
@@ -208,12 +224,12 @@ export default class ApiStore {
 
             return null;
         } catch (err) {
-            return this.sendApiError(err);
+            return this.sendApiError(err, api.components.wifi);
         }
     }
 
-    sendApiError = err => {
-        console.error('Error {ApiStore} get server state', {
+    sendApiError = (err, component) => {
+        console.error(`Error {ApiStore}, Component: [${component}]`, {
             err,
             sender: this
         });
@@ -221,8 +237,8 @@ export default class ApiStore {
         return err;
     };
 
-    sendApiWarn = warn => {
-        console.warn('Warn {ApiStore} get server state', {
+    sendApiWarn = (warn, component) => {
+        console.warn('Warn {ApiStore}, Component: [${component}]', {
             warn,
             sender: this
         });

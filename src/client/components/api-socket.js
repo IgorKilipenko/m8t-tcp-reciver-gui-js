@@ -28,11 +28,11 @@ export default class ApiSocket {
         console.log({ baseUrl: this.instance.baseURL });
     }
 
-    setNtripClient = enable => {
+    setNtripClient = (enable, options) => {
         return this.action({
             component: this.components.ntrip,
             cmd: enable ? 'start' : 'stop',
-            mntpnt: "NVSB3_2"
+            ...options
         });
     };
 
