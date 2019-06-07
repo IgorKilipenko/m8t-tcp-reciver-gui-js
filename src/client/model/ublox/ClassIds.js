@@ -40,4 +40,13 @@ const NavMessageIds = {
     VELNED: 0x12
 };
 
-export { ClassIds, NavMessageIds };
+const GNSSfixTypes = [
+    {val:0, name:'no fix'},
+    {val:1, name:'dead reckoning only'},
+    {val:2, name:'2D-fix'},
+    {val:3, name:'3D-fix'},
+    {val:4, name:'GNSS + dead reckoning combined'},
+    {val:5, name:'time only fix'}
+];
+
+export { ClassIds, NavMessageIds, GNSSfixTypes };

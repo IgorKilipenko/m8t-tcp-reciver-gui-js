@@ -150,7 +150,7 @@ class ReceiverView extends React.Component {
                                 )}
                                 {this.renderGpsTextField(
                                     'height',
-                                    sEvents.ubxNavMessage[0].height.toFixed(3)
+                                    sEvents.ubxNavMessage[0].heightMSL.toFixed(3)
                                 )}
                                 <GoogleMap
                                     center={{
