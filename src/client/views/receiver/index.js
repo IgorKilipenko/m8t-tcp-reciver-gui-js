@@ -125,6 +125,7 @@ class ReceiverView extends React.Component {
             sEvents.ubxNavMessage &&
             sEvents.ubxNavMessage.length > 0 &&
             sEvents.ubxNavMessage[0];
+
         return (
             <Card className={classes.receiverCard}>
                 <CardContent>

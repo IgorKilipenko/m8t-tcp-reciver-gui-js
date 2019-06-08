@@ -42,7 +42,8 @@ export default class UbxDecoder extends EventEmitter {
         checksumOk: 'checksumOk',
         navMsg: 'navMsg',
         //pvtMsg: 'pvtMsg',
-        ubxPacket: 'ubxpacket'
+        ubxPacket: 'ubxpacket',
+        pvtMsg: 'pvtMsg'
     };
 
     _payloadOffset = 6;
@@ -82,7 +83,20 @@ export default class UbxDecoder extends EventEmitter {
                     this.emit(UbxDecoder._emits.ubxPacket, ubxPacket);
                     switch (ubxPacket.classId) {
                         case ClassIds.NAV:
-                            this.emit(UbxDecoder._emits.navMsg, ubxPacket);
+                            switch (ubxPacket.msgId) {
+                                case NavMessageIds.PVT:
+                                    const pvtMsg = this.decodePvtMsg(ubxPacket);
+                                    if (pvtMsg) {
+
+                                        this.emit(
+                                            UbxDecoder._emits.pvtMsg,
+                                            pvtMsg
+                                        );
+                                        return pvtMsg;
+                                    }
+                                    break;
+                            }
+
                             break;
                         default:
                             this.emit(UbxDecoder._emits.message, ubxPacket);
@@ -90,18 +104,6 @@ export default class UbxDecoder extends EventEmitter {
                 }
 
                 return ubxPacket;
-
-                //                const res = this.decode(buffer, this._length);
-                //                if (res) {
-                //                    switch (res.classId) {
-                //                        case ClassIds.NAV:
-                //                            this.emit(UbxDecoder._emits.navMsg, res);
-                //                            break;
-                //                        default:
-                //                            this.emit(UbxDecoder._emits.message, res);
-                //                    }
-                //                }
-                //                return res;
             }
         }
     };
@@ -242,6 +244,11 @@ export default class UbxDecoder extends EventEmitter {
         };
     };
 
+    /**
+     *
+     * @param {UbxPacket} ubxPacket Decoded binary ublox packet
+     * @memberof UbxDecoder
+     */
     decodePvtMsg = ubxPacket => {
         if (ubxPacket.payloadLength < 92) {
             console.warn('Warn decode PVT message, payload length < 92', {
@@ -280,6 +287,5 @@ export default class UbxDecoder extends EventEmitter {
         // ...............
 
         return pvtMsg;
-        
     };
 }

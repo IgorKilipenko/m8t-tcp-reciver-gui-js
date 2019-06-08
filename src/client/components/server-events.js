@@ -24,6 +24,8 @@ class ServerEvents extends EventEmitter {
             this.emit(events.wsMsg, e);
         };
         this.decoder = new UbxDecoder();
+
+        
     }
 
     onWsOpen = callback => {
@@ -100,21 +102,12 @@ class ServerEvents extends EventEmitter {
     };
 
     onUbxNavMessage = callback => {
-        //this.ws.onmessage = e => {
-        //    if (e.data instanceof ArrayBuffer) {
-        //        //const buf = new Uint8Array(e.data);
-        //        callback(e.data);
-        //    }
-        //};
-
+        this.decoder.on(UbxDecoder.EMITS.pvtMsg, msg => callback(msg));
         this.addWsEventListener(events.wsMsg, e => {
             if (e.data && e.data instanceof ArrayBuffer) {
                 const buf = new Uint8Array(e.data);
                 buf.forEach(b => {
-                    const res = this.decoder.inputData(b);
-                    if (res && res.classId === ClassIds.NAV){
-                        callback(res);
-                    }
+                    this.decoder.inputData(b);
                 })
             }
         });
