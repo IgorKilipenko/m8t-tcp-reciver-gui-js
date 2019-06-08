@@ -52,7 +52,7 @@ const styles = theme => ({
         width: 20
     },
     divider: {
-        height: '80%'
+        height: 1
     }
 });
 class NtripClient extends React.Component {
@@ -202,7 +202,7 @@ class NtripClient extends React.Component {
                             )}
                         </div>
                     </ExpansionPanelDetails>
-                    <Divider />
+                    <Divider className={classes.divider} />
                     <ExpansionPanelActions>
                         <Button size="small" onClick={() => handleDisconnect({...this.state.ntripClient})}>
                             Stop
