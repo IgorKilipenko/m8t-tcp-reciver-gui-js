@@ -193,14 +193,18 @@ class MiniDrawer extends React.Component {
                 </div>
                 <Divider />
                 <List>
-
                     {/*=================== Home =======================*/}
-                    <ListItem button key={1} component={Link} to="/">
+                    <ListItem
+                        button
+                        key={1}
+                        component={Link}
+                        to="/"
+                        selected={pathname === '/'}
+                    >
                         <ListItemIcon>
                             <SpeakerPhoneIcon />
                         </ListItemIcon>
                         <ListItemText primary="Home" />
-                        selected={pathname === '/'}
                     </ListItem>
 
                     {/*=================== StreamView =======================*/}
@@ -221,7 +225,6 @@ class MiniDrawer extends React.Component {
 
                 {/*=================== Menu =======================*/}
                 <List>
-
                     {/*               WifiView               */}
                     <ListItem
                         button
