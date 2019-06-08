@@ -112,8 +112,9 @@ class ServerEvents extends EventEmitter {
             return msg;
         }
         if (msg) {
-            msg.lat += DEV_CORRECTION.lat;
-            msg.lon += DEV_CORRECTION.lon;
+            msg.latitude += DEV_CORRECTION.lat;
+            msg.longitude += DEV_CORRECTION.lon;
+            return msg;
         }
     };
 
