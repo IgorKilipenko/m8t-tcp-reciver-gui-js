@@ -91,10 +91,10 @@ class ServerEvents extends EventEmitter {
 
     onUbxMessage = callback => {
         this.decoder.on(UbxDecoder.EMITS.pvtMsg, msg =>
-            callback(_editPos(msg))
+            callback(this._editPos(msg))
         );
         this.decoder.on(UbxDecoder.EMITS.hpposllh, msg =>
-            callback(_editPos(msg))
+            callback(this._editPos(msg))
         );
 
         this.addWsEventListener(events.wsMsg, e => {
