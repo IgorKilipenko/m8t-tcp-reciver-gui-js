@@ -1,5 +1,6 @@
 import { observable, computed, action } from 'mobx';
 import { events } from '../components/server-events';
+import { ClassIds, NavMessageIds } from '../model/ublox';
 
 const MAX_LEN = 500;
 
@@ -8,8 +9,8 @@ export default class ServerEventStore {
     @observable _otaMessage = [];
     @observable _ubxNavMessage = [];
     @observable _receiverData = [];
-
-    
+    @observable _pvtMessage = null; // Last PVT message
+    @observable _hpposllhMessage = null; // Last HPPOSLLH message
 
     @action setDebugMessage(msg) {
         let msgs = [];
@@ -50,7 +51,15 @@ export default class ServerEventStore {
         } else if (event === events.ota) {
             this.setOtaMessage(msg);
         } else if (event === events.ubxNav) {
-            this.setUbxNavMessage(msg);
+            //this.setUbxNavMessage(msg);
+            if (msg.class !== ClassIds.NAV) {
+                return;
+            }
+            if (msg.type === NavMessageIds.PVT) {
+                this.setPvtMessage(msg);
+            } else if (msg.type === NavMessageIds.HPPOSLLH) {
+                this.setHPPOSLLHMessage(msg);
+            }
         }
     }
 
@@ -78,4 +87,35 @@ export default class ServerEventStore {
     get ubxNavMessage() {
         return this._ubxNavMessage;
     }
+
+    /**
+     * Get Last PVT Message from server
+     *
+     * @readonly
+     * @memberof ServerEventStore
+     */
+    @computed
+    get ubxPvtMessage() {
+        return this._pvtMessage;
+    }
+
+    /**
+     * Set Current PVT Message
+     *
+     * @memberof ServerEventStore
+     */
+    @action
+    setPvtMessage = msg => {
+        this._pvtMessage = msg;
+    };
+
+    @computed
+    get ubxHPPOSLLHMessage() {
+        return this._hpposllhMessage;
+    }
+
+    @action
+    setHPPOSLLHMessage = msg => {
+        this._hpposllhMessage = msg;
+    };
 }

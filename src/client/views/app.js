@@ -8,6 +8,7 @@ import ApiSocket from '../components/api-socket';
 import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { serverEvents, events as EVENTS } from '../components/server-events';
+import { ClassIds, NavMessageIds } from '../model/ublox';
 
 //import { UbxDecoder, ClassIds, NavMessageIds } from '../model/ublox';
 
@@ -45,20 +46,21 @@ class App extends React.Component {
         serverEvents.onDebugMessage(msg =>
             this.handleServerEvents(EVENTS.debug, msg)
         );
-        serverEvents.onUbxNavMessage(msg => {
+        serverEvents.onUbxMessage(msg => {
             //console.log('Nav msg');
-            this.handleServerEvents(EVENTS.ubxNav, msg);
+            if (msg && msg.class === ClassIds.NAV){
+                //this.handleServerEvents(EVENTS.ubxNav, msg);
+                switch (msg.type){
+                    case NavMessageIds.PVT:
+                        this.props.serverEventStore.setPvtMessage(msg);
+                        break;
+                    case NavMessageIds.HPPOSLLH:
+                        this.props.serverEventStore.setHPPOSLLHMessage(msg);
+                }
+            }
+            
         });
 
-        //this.decoder.on('navMsg', navMsg => {
-        //    console.log('UBX NAV MSG', { navMsg });
-        //});
-        //serverEvents.onWsMessage(data => {
-        //console.log("has data");
-        //data.forEach(byte => {
-        //    this.decoder.inputData(byte);
-        //})
-        //});
     };
 
     componentWillUnmount = () => {

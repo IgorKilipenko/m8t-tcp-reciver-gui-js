@@ -41,9 +41,10 @@ export default class UbxDecoder extends EventEmitter {
         message: 'msg',
         checksumOk: 'checksumOk',
         navMsg: 'navMsg',
-        //pvtMsg: 'pvtMsg',
+        pvtMsg: 'pvtMsg',
         ubxPacket: 'ubxpacket',
-        pvtMsg: 'pvtMsg'
+        pvtMsg: 'pvtMsg',
+        hpposllh: 'hpposllh'
     };
 
     _payloadOffset = 6;
@@ -95,6 +96,12 @@ export default class UbxDecoder extends EventEmitter {
                                         return pvtMsg;
                                     }
                                     break;
+                                case NavMessageIds.HPPOSLLH: 
+                                    const hpposllhMsg = this.decodeNavHPPOSLLHMsg(ubxPacket);
+                                    if (hpposllhMsg){
+                                        this.emit(UbxDecoder._emits.hpposllh, hpposllhMsg);
+                                        return hpposllhMsg;
+                                    }
                             }
 
                             break;
@@ -140,27 +147,6 @@ export default class UbxDecoder extends EventEmitter {
         return ck[0] === buffer[length - 2] && ck[1] === buffer[length - 1];
     };
 
-    /**
-     * Decode ublox packet
-     * @deprecated Use decodePacket
-     * @param {!Uint8Array} buffer Buffer
-     * @param {!number} length Total ubxPacket lentgh
-     * @returns {?Object} Return decoded Ublox Message ar NULL
-     * @memberof UbxDecoder
-     */
-    decode = (buffer, length) => {
-        const classId = buffer[2];
-        const msgId = buffer[3];
-        //     const payload = buffer.subarray(6, length - 3);
-        if (classId === ClassIds.NAV && msgId === NavMessageIds.POSLLH) {
-            const payload = new Uint8Array(
-                buffer.subarray(PAYLOAD_OFFSET, length - 2)
-            );
-            return this.decodeNavPOSLLHMsg(payload, length - 8);
-        } else {
-            return null;
-        }
-    };
 
     /**
      * @returns {?UbxPacket} Decoded ublox packet
@@ -232,8 +218,8 @@ export default class UbxDecoder extends EventEmitter {
         const verticalAcc = u4[6] / 1000;
 
         return {
-            classId: ClassIds.NAV,
-            msgId: NavMessageIds.POSLLH,
+            class: ClassIds.NAV,
+            type: NavMessageIds.POSLLH,
             iTOW,
             longitude,
             latitude,
@@ -260,7 +246,8 @@ export default class UbxDecoder extends EventEmitter {
         const { payload } = ubxPacket;
 
         let pvtMsg = {};
-
+        pvtMsg.class = ClassIds.NAV;
+        pvtMsg.type = NavMessageIds.PVT;
         pvtMsg.iTow = payload.getUint32(0, true);
         pvtMsg.year = payload.getUint16(4, true);
         pvtMsg.month = payload.getUint8(6, true);
@@ -288,4 +275,40 @@ export default class UbxDecoder extends EventEmitter {
 
         return pvtMsg;
     };
+
+    decodeNavHPPOSLLHMsg = ubxPacket => {
+        const minPayloadLen = 36;
+        if (ubxPacket.payloadLength < minPayloadLen) {
+            console.warn(`Warn decode HPPOSLLH message, payload length < [${minPayloadLen}]`, {
+                ubxPacket
+            });
+            return null;
+        }
+
+        const { payload } = ubxPacket;
+
+        let hpposllhMsg = {};
+        hpposllhMsg.class = ClassIds.NAV;
+        hpposllhMsg.type = NavMessageIds.HPPOSLLH;
+        hpposllhMsg.version = payload.getUint8(0);
+        hpposllhMsg.iTow = payload.getInt32(4, true);
+        hpposllhMsg.longitudeLow = _getDeg(payload.getInt32(8, true), 7);
+        hpposllhMsg.latitudeLow = _getDeg(payload.getInt32(12, true), 7);
+        hpposllhMsg.heightLow = _getDistM(payload.getInt32(16, true));
+        hpposllhMsg.heightMSLLow = _getDistM(payload.getInt32(20, true));
+
+        hpposllhMsg.lonHp = _getDeg(payload.getInt8(24, true), 9);
+        hpposllhMsg.latHp = _getDeg(payload.getInt8(25, true), 9);
+        hpposllhMsg.hHp = _getDistM(payload.getInt8(26, true))*0.1;
+        hpposllhMsg.hMSLHp = _getDistM(payload.getInt8(27, true))*0.1;
+
+        hpposllhMsg.longitude = hpposllhMsg.longitudeLow + lonHp;
+        hpposllhMsg.latitudeLow = hpposllhMsg.latitudeLow + latHp;
+        hpposllhMsg.heightLow = hpposllhMsg.heightLow + hHp;
+        hpposllhMsg.heightMSLLow = hpposllhMsg.heightMSLLow + hMSLHp;
+        hpposllhMsg.hAcc = _getDistM(payload.getUint32(28, true))*0.1;
+        hpposllhMsg.vAcc = _getDistM(payload.getUint32(32, true))*0.1;
+
+        return hpposllhMsg;
+    }
 }

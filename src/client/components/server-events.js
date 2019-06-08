@@ -5,6 +5,7 @@ const events = {
     debug: 'logger',
     ota: 'ota',
     ubxNav: 'ubxnav',
+    ubxMsg: 'ubxmsg',
     receiverData: 'gpsraw',
     wsMsg: 'wsmsg'
 };
@@ -24,8 +25,6 @@ class ServerEvents extends EventEmitter {
             this.emit(events.wsMsg, e);
         };
         this.decoder = new UbxDecoder();
-
-        
     }
 
     onWsOpen = callback => {
@@ -48,17 +47,6 @@ class ServerEvents extends EventEmitter {
     };
 
     onWsMessage = callback => {
-        //  this.ws.onmessage = e => {
-        //      let msg = '';
-        //      if (e.data instanceof ArrayBuffer) {
-        //          const buf = new Uint8Array(e.data);
-        //          msg = String.fromCharCode(buf);
-        //      } else {
-        //          msg = e.data;
-        //      }
-        //      callback(msg);
-        //  };
-
         this.addWsEventListener(events.wsMsg, e => {
             let msg = '';
             if (e.data instanceof ArrayBuffer) {
@@ -101,8 +89,11 @@ class ServerEvents extends EventEmitter {
         });
     };
 
-    onUbxNavMessage = callback => {
+    onUbxMessage = callback => {
+
         this.decoder.on(UbxDecoder.EMITS.pvtMsg, msg => callback(msg));
+        this.decoder.on(UbxDecoder.EMITS.hpposllh, msg => callback(msg));
+
         this.addWsEventListener(events.wsMsg, e => {
             if (e.data && e.data instanceof ArrayBuffer) {
                 const buf = new Uint8Array(e.data);
