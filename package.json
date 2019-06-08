@@ -1,6 +1,6 @@
 {
     "name": "site",
-    "version": "0.0.1",
+    "version": "1.0.0-alpha.0",
     "description": "",
     "main": "index.js",
     "scripts": {
@@ -10,7 +10,7 @@
         "test": "set NODE_ENV=development && yarn build-dev && babel-node server.js"
     },
     "author": "Igor Kilipenko <igorkili@mail.ru>",
-    "license": "ISC",
+    "license": "MTI",
     "devDependencies": {
         "@babel/cli": "^7.4.4",
         "@babel/core": "^7.4.5",
