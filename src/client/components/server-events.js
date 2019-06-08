@@ -14,7 +14,7 @@ class ServerEvents extends EventEmitter {
     constructor() {
         super();
         this.ws = new WebSocket(
-            `ws://${DEVELOPMENT ? REMOTE_HOST : document.location.host}/ws`,
+            `ws://${DEVELOPMENT ? REMOTE_HOST : document.location.host}/ubx`,
             ['arduino']
         );
         this.ws.binaryType = 'arraybuffer';
