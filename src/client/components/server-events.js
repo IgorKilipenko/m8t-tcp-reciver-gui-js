@@ -90,31 +90,43 @@ class ServerEvents extends EventEmitter {
     };
 
     onUbxMessage = callback => {
-
-        this.decoder.on(UbxDecoder.EMITS.pvtMsg, msg => callback(msg));
-        this.decoder.on(UbxDecoder.EMITS.hpposllh, msg => callback(msg));
+        this.decoder.on(UbxDecoder.EMITS.pvtMsg, msg =>
+            callback(_editPos(msg))
+        );
+        this.decoder.on(UbxDecoder.EMITS.hpposllh, msg =>
+            callback(_editPos(msg))
+        );
 
         this.addWsEventListener(events.wsMsg, e => {
             if (e.data && e.data instanceof ArrayBuffer) {
                 const buf = new Uint8Array(e.data);
                 buf.forEach(b => {
                     this.decoder.inputData(b);
-                })
+                });
             }
         });
-    }
+    };
+
+    _editPos = msg => {
+        if (!DEVELOPMENT) {
+            return msg;
+        }
+        if (msg) {
+            msg.lat += DEV_CORRECTION.lat;
+            msg.lon += DEV_CORRECTION.lon;
+        }
+    };
 
     onReceiverData = callback => {
         this.ws.onmessage = e => {
             if (e.data instanceof ArrayBuffer) {
                 const buf = new Uint8Array(e.data);
-                buf.forEach( b => {
+                buf.forEach(b => {
                     const res = this.decoder.inputData(b);
-                    if (res && res.classId == ClassIds.NAV){
+                    if (res && res.classId == ClassIds.NAV) {
                         callback(res);
                     }
-                })
-                
+                });
             }
         };
     };

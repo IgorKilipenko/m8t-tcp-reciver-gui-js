@@ -16,7 +16,8 @@ const devConfig = merge(common,
         plugins: [
             new webpack.HotModuleReplacementPlugin(),
             new webpack.DefinePlugin({
-                DEVELOPMENT: JSON.stringify(true)
+                DEVELOPMENT: JSON.stringify(true),
+                DEV_CORRECTION: JSON.stringify({lat:0, lon: 0});
             })
         ]
     }
