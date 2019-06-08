@@ -30,7 +30,7 @@ class App extends React.Component {
     }
 
     handleServerEvents = (event, msg) => {
-        console.debug("msg app", {event, msg})
+        //console.debug("msg app", {event, msg})
         this.props.serverEventStore.setMessage(event, msg);
     };
 
