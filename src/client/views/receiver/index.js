@@ -121,10 +121,7 @@ class ReceiverView extends React.Component {
 
     renderReceiverInfo = classes => {
         const sEvents = this.props.serverEventStore;
-        const hasGpsData =
-            sEvents.ubxNavMessage &&
-            sEvents.ubxNavMessage.length > 0 &&
-            sEvents.ubxNavMessage[0];
+        const pvtMessage = sEvents.ubxPvtMessage;
 
         return (
             <Card className={classes.receiverCard}>
@@ -136,27 +133,27 @@ class ReceiverView extends React.Component {
                     >
                         {`Receiver ip: `}
                     </Typography>
-                    {hasGpsData && (
+                    {pvtMessage && (
                         <div>
                             <div>
                                 {this.renderGpsTextField(
                                     'Longitude',
-                                    sEvents.ubxNavMessage[0].longitude.toFixed(
+                                    pvtMessage.longitude.toFixed(
                                         8
                                     )
                                 )}
                                 {this.renderGpsTextField(
                                     'latitude',
-                                    sEvents.ubxNavMessage[0].latitude.toFixed(8)
+                                    pvtMessage.latitude.toFixed(8)
                                 )}
                                 {this.renderGpsTextField(
                                     'height',
-                                    sEvents.ubxNavMessage[0].heightMSL.toFixed(3)
+                                    pvtMessage.heightMSL.toFixed(3)
                                 )}
                                 <GoogleMap
                                     center={{
-                                        lng: sEvents.ubxNavMessage[0].longitude,
-                                        lat: sEvents.ubxNavMessage[0].latitude
+                                        lng: pvtMessage.longitude,
+                                        lat: pvtMessage.latitude
                                     }}
                                 />
                             </div>
