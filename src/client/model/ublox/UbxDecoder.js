@@ -303,9 +303,9 @@ export default class UbxDecoder extends EventEmitter {
         hpposllhMsg.hMSLHp = _getDistM(payload.getInt8(27, true))*0.1;
 
         hpposllhMsg.longitude = hpposllhMsg.longitudeLow + hpposllhMsg.lonHp;
-        hpposllhMsg.latitudeLow = hpposllhMsg.latitudeLow + hpposllhMsg.latHp;
-        hpposllhMsg.heightLow = hpposllhMsg.heightLow + hpposllhMsg.hHp;
-        hpposllhMsg.heightMSLLow = hpposllhMsg.heightMSLLow + hpposllhMsg.hMSLHp;
+        hpposllhMsg.latitude = hpposllhMsg.latitudeLow + hpposllhMsg.latHp;
+        hpposllhMsg.height = hpposllhMsg.heightLow + hpposllhMsg.hHp;
+        hpposllhMsg.heightMSL = hpposllhMsg.heightMSLLow + hpposllhMsg.hMSLHp;
         hpposllhMsg.hAcc = _getDistM(payload.getUint32(28, true))*0.1;
         hpposllhMsg.vAcc = _getDistM(payload.getUint32(32, true))*0.1;
 

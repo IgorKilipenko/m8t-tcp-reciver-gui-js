@@ -56,6 +56,7 @@ class App extends React.Component {
                         break;
                     case NavMessageIds.HPPOSLLH:
                         this.props.serverEventStore.setHPPOSLLHMessage(msg);
+                        break;
                 }
             }
             

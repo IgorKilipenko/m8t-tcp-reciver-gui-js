@@ -122,6 +122,8 @@ class ReceiverView extends React.Component {
     renderReceiverInfo = classes => {
         const sEvents = this.props.serverEventStore;
         const pvtMessage = sEvents.ubxPvtMessage;
+        const carrierSolution = pvtMessage ? pvtMessage.carrierSolution : null;
+        const poss = (carrierSolution && sEvents.ubxHPPOSLLHMessage ) ? sEvents.ubxHPPOSLLHMessage : pvtMessage;
 
         return (
             <Card className={classes.receiverCard}>
@@ -131,29 +133,29 @@ class ReceiverView extends React.Component {
                         color="textSecondary"
                         gutterBottom
                     >
-                        {`Receiver ip: `}
+                        {`Receiver ip: ${carrierSolution}`}
                     </Typography>
-                    {pvtMessage && (
+                    {poss && (
                         <div>
                             <div>
                                 {this.renderGpsTextField(
                                     'Longitude',
-                                    pvtMessage.longitude.toFixed(
+                                    poss.longitude.toFixed(
                                         8
                                     )
                                 )}
                                 {this.renderGpsTextField(
                                     'latitude',
-                                    pvtMessage.latitude.toFixed(8)
+                                    poss.latitude.toFixed(8)
                                 )}
                                 {this.renderGpsTextField(
                                     'height',
-                                    pvtMessage.heightMSL.toFixed(3)
+                                    poss.heightMSL.toFixed(3)
                                 )}
                                 <GoogleMap
                                     center={{
-                                        lng: pvtMessage.longitude,
-                                        lat: pvtMessage.latitude
+                                        lng: poss.longitude,
+                                        lat: poss.latitude
                                     }}
                                 />
                             </div>
