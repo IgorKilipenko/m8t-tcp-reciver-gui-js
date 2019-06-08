@@ -39,7 +39,7 @@ class CorrectionsView extends React.Component {
 
     handlerNtripConnect = async ntripOptions => {
         const res = this.props.apiStore.ntripAction(true, ntripOptions);
-        //this.props.apiStore.updateNtripState();
+        this.props.apiStore.updateNtripState();
         if (!localStorage) {
             console.warn('localStorage is null');
         } else if (res && res.data && res.data.enabled) {

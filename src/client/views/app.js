@@ -38,6 +38,7 @@ class App extends React.Component {
     componentDidMount = () => {
         this.props.apiStore.updateServerState();
         this.props.apiStore.updateReceiverState();
+        this.props.apiStore.updateNtripState();
 
         this.timeoutHandler = setTimeout(() => {
             this.props.apiStore.updateWiFiList();

@@ -17,7 +17,8 @@ export default class ApiStore {
         timeReceive: 0,
         host: '',
         port: '',
-        mountPoint: ''
+        mountPoint: '',
+        lastUpdate: null
     };
     @observable _serverState = {
         serverStart: 0,
@@ -61,6 +62,13 @@ export default class ApiStore {
 
     @action
     async updateNtripState() {
+        if (
+            this._ntripState &&
+            this._ntripState.lastUpdate &&
+            new Date() - this._ntripState.lastUpdate < 1000
+        ) {
+            return this.sendApiWarn('Small time interval');
+        }
         try {
             const res = await api.getNtripState();
             console.debug({ res });

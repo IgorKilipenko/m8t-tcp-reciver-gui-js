@@ -14,6 +14,7 @@ import Typography from '@material-ui/core/Typography';
 import SdIcon from '@material-ui/icons/SdStorage';
 import IconButton from '@material-ui/core/IconButton';
 import GoogleMap from '../../components/Map';
+import NavPane from '../../components/NavPane'
 
 const api = new ApiSocket();
 
@@ -30,7 +31,7 @@ const styles = theme => ({
     },
     receiverCard: {
         minWidth: 275,
-        maxWidth: 500,
+        //maxWidth: 500,
         flexDirection: 'row'
     }
 });
@@ -128,30 +129,10 @@ class ReceiverView extends React.Component {
         return (
             <Card className={classes.receiverCard}>
                 <CardContent>
-                    <Typography
-                        className={classes.title}
-                        color="textSecondary"
-                        gutterBottom
-                    >
-                        {`Receiver ip: ${carrierSolution}`}
-                    </Typography>
                     {poss && (
                         <div>
                             <div>
-                                {this.renderGpsTextField(
-                                    'Longitude',
-                                    poss.longitude.toFixed(
-                                        8
-                                    )
-                                )}
-                                {this.renderGpsTextField(
-                                    'latitude',
-                                    poss.latitude.toFixed(8)
-                                )}
-                                {this.renderGpsTextField(
-                                    'height',
-                                    poss.heightMSL.toFixed(3)
-                                )}
+                            <NavPane position={poss} carrierSolution={carrierSolution} fixMode={pvtMessage.fixType}/>
                                 <GoogleMap
                                     center={{
                                         lng: poss.longitude,

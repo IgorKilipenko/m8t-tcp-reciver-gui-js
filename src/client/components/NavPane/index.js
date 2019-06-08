@@ -11,7 +11,8 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
-import { GNSSfixTypes } from '../../model/ublox';
+import { GNSSfixTypes } from '../../model/ublox/ClassIds';
+import green from '@material-ui/core/colors/green';
 
 const styles = theme => ({
     root: {
@@ -53,6 +54,9 @@ const styles = theme => ({
     },
     divider: {
         height: 1
+    },
+    carrFix: {
+        color: green[800]
     }
 });
 
@@ -63,19 +67,18 @@ class NavPane extends React.Component {
         fixed: 2,
         float: 1
     };
-    getFixMode = (mode, isCarrSol) => {
-        let res = 'Fix Mode: ';
+    getFixMode = (mode, carrSol) => {
+        let res = '';
         if (mode !== null) {
-            if (isCarrSol) {
-                res += 'DGPS';
-                if (mode == NavPane._carrSol.fixed) {
+            mode = fixModeMap.find(m => m.val == mode);
+            res += mode ? mode.name : '';
+            if (carrSol) {
+                res += '/DGNSS';
+                if (carrSol == NavPane._carrSol.fixed) {
                     res += '/Fixed';
                 } else {
                     res += '/Float';
                 }
-            } else {
-                mode = fixModeMap.find(m => m.val == mode);
-                res += mode ? mode.name : '';
             }
         }
         return res;
@@ -95,28 +98,52 @@ class NavPane extends React.Component {
                         expandIcon={<ExpandMoreIcon />}
                         aria-controls="panel1c-content"
                         id="panel1c-header"
-                    />
-                    <div className={classes.column}>
-                        <Typography className={classes.heading}>
-                            Navigation panel
-                        </Typography>
-                    </div>
-                    <div className={classes.column}>
-                        <Typography
-                            className={classes.secondaryHeading}
-                            color={fixMode ? 'primary' : 'secondary'}
-                            value={this.getFixMode()}
-                        />
-                    </div>
+                    >
+                        <div className={classes.column}>
+                            <Typography className={clsx(classes.heading, {[classes.carrFix]:carrierSolution == 2})}>
+                            {`Fix Mode: ${this.getFixMode(
+                                    fixMode,
+                                    carrierSolution
+                                )}`}
+                            </Typography>
+                        </div>
+                    </ExpansionPanelSummary>
+                    <ExpansionPanelDetails className={classes.details}>
+                        <div
+                            className={classes.column}
+                        >
+                            {position && (
+                                <React.Fragment>
+                                    <Typography
+                                    >
+                                        {`Latitude: ${position.latitude.toFixed(8)}`}
+                                    </Typography>
+                                    <Typography
+                                    >
+                                        {`Longitude: ${position.longitude.toFixed(8)}`}
+                                    </Typography>
+                                    <Typography
+                                    >
+                                        {`HeightMSL: ${position.heightMSL.toFixed(3)}`}
+                                    </Typography>
+                                </React.Fragment>
+                            )}
+                        </div>
+
+                        <div className={classes.column} />
+                    </ExpansionPanelDetails>
                 </ExpansionPanel>
+                <Divider/>
             </div>
+            
         );
     };
 }
 
 NavPane.propTypes = {
     classes: PropTypes.object.isRequired,
-    fixMode: PropTypes.bool.isRequired,
+    fixMode: PropTypes.number.isRequired,
+    carrierSolution: PropTypes.number.isRequired,
     position: PropTypes.object.isRequired,
     satelitInfo: PropTypes.object.isRequired
 };
