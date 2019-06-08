@@ -91,10 +91,10 @@ class ServerEvents extends EventEmitter {
 
     onUbxMessage = callback => {
         this.decoder.on(UbxDecoder.EMITS.pvtMsg, msg =>
-            callback(this._editPos(msg))
+            callback(msg)
         );
         this.decoder.on(UbxDecoder.EMITS.hpposllh, msg =>
-            callback(this._editPos(msg))
+            callback(msg)
         );
 
         this.addWsEventListener(events.wsMsg, e => {
@@ -105,17 +105,6 @@ class ServerEvents extends EventEmitter {
                 });
             }
         });
-    };
-
-    _editPos = msg => {
-        if (!DEVELOPMENT) {
-            return msg;
-        }
-        if (msg) {
-            msg.latitude += DEV_CORRECTION.lat;
-            msg.longitude += DEV_CORRECTION.lon;
-            return msg;
-        }
     };
 
     onReceiverData = callback => {
