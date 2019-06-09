@@ -53,7 +53,7 @@ const styles = theme => ({
     },
     divider: {
         height: 1
-    }
+    },
 });
 class NtripClient extends React.Component {
     state = {
@@ -131,7 +131,8 @@ class NtripClient extends React.Component {
                                             'host'
                                         )}
                                         disabled={connected}
-                                        required={true}
+                                        //required={true}
+                                        {...((!this.state.ntripClient.host || this.state.ntripClient.host == '') ? {error:''} : {})}
                                     />
                                     <TextField
                                         id="port-input"
@@ -146,7 +147,7 @@ class NtripClient extends React.Component {
                                     />
                                     <TextField
                                         id="mountpoint-input"
-                                        label="Mount point"
+                                        label="Mount point*"
                                         className={classes.textField}
                                         margin="normal"
                                         value={
@@ -156,7 +157,8 @@ class NtripClient extends React.Component {
                                             'mountPoint'
                                         )}
                                         disabled={connected}
-                                        required={true}
+                                        //required={true}
+                                        {...((!this.state.ntripClient.mountPoint || this.state.ntripClient.mountPoint == '') ? {error:''} : {})}
                                     />
                                 </div>
                                 <div className={classes.column}>
