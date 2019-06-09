@@ -32,6 +32,11 @@ const _getDistM = val => {
 };
 
 export default class UbxDecoder extends EventEmitter {
+    constructor(socket) {
+        super();
+        this._socket = socket;
+    }
+    _socket = null;
     _nbyte = 0;
     _buffer = new ArrayBuffer(MAX_MSG_LEN);
     _uintBuffer = new Uint8Array(this._buffer);
@@ -88,7 +93,6 @@ export default class UbxDecoder extends EventEmitter {
                                 case NavMessageIds.PVT:
                                     const pvtMsg = this.decodePvtMsg(ubxPacket);
                                     if (pvtMsg) {
-
                                         this.emit(
                                             UbxDecoder._emits.pvtMsg,
                                             pvtMsg
@@ -96,10 +100,15 @@ export default class UbxDecoder extends EventEmitter {
                                         return pvtMsg;
                                     }
                                     break;
-                                case NavMessageIds.HPPOSLLH: 
-                                    const hpposllhMsg = this.decodeNavHPPOSLLHMsg(ubxPacket);
-                                    if (hpposllhMsg){
-                                        this.emit(UbxDecoder._emits.hpposllh, hpposllhMsg);
+                                case NavMessageIds.HPPOSLLH:
+                                    const hpposllhMsg = this.decodeNavHPPOSLLHMsg(
+                                        ubxPacket
+                                    );
+                                    if (hpposllhMsg) {
+                                        this.emit(
+                                            UbxDecoder._emits.hpposllh,
+                                            hpposllhMsg
+                                        );
                                         return hpposllhMsg;
                                     }
                             }
@@ -146,7 +155,6 @@ export default class UbxDecoder extends EventEmitter {
         }
         return ck[0] === buffer[length - 2] && ck[1] === buffer[length - 1];
     };
-
 
     /**
      * @returns {?UbxPacket} Decoded ublox packet
@@ -279,9 +287,12 @@ export default class UbxDecoder extends EventEmitter {
     decodeNavHPPOSLLHMsg = ubxPacket => {
         const minPayloadLen = 36;
         if (ubxPacket.payloadLength < minPayloadLen) {
-            console.warn(`Warn decode HPPOSLLH message, payload length < [${minPayloadLen}]`, {
-                ubxPacket
-            });
+            console.warn(
+                `Warn decode HPPOSLLH message, payload length < [${minPayloadLen}]`,
+                {
+                    ubxPacket
+                }
+            );
             return null;
         }
 
@@ -299,16 +310,113 @@ export default class UbxDecoder extends EventEmitter {
 
         hpposllhMsg.lonHp = _getDeg(payload.getInt8(24, true), 9);
         hpposllhMsg.latHp = _getDeg(payload.getInt8(25, true), 9);
-        hpposllhMsg.hHp = _getDistM(payload.getInt8(26, true))*0.1;
-        hpposllhMsg.hMSLHp = _getDistM(payload.getInt8(27, true))*0.1;
+        hpposllhMsg.hHp = _getDistM(payload.getInt8(26, true)) * 0.1;
+        hpposllhMsg.hMSLHp = _getDistM(payload.getInt8(27, true)) * 0.1;
 
         hpposllhMsg.longitude = hpposllhMsg.longitudeLow + hpposllhMsg.lonHp;
         hpposllhMsg.latitude = hpposllhMsg.latitudeLow + hpposllhMsg.latHp;
         hpposllhMsg.height = hpposllhMsg.heightLow + hpposllhMsg.hHp;
         hpposllhMsg.heightMSL = hpposllhMsg.heightMSLLow + hpposllhMsg.hMSLHp;
-        hpposllhMsg.hAcc = _getDistM(payload.getUint32(28, true))*0.1;
-        hpposllhMsg.vAcc = _getDistM(payload.getUint32(32, true))*0.1;
+        hpposllhMsg.hAcc = _getDistM(payload.getUint32(28, true)) * 0.1;
+        hpposllhMsg.vAcc = _getDistM(payload.getUint32(32, true)) * 0.1;
 
         return hpposllhMsg;
-    }
+    };
+
+    sendCommand = async (ubxPacket, waitResponseTime = 200) => {
+        if (!this._socket) {
+            return null;
+        }
+
+        const buffer = this.ubxPacketToBinary(ubxPacket);
+        this._socket.write(buffer);
+        if (waitResponseTime > 0) {
+            const respPacket = await this.waitResponse(
+                ubxPacket.class,
+                ubxPacket.type,
+                waitResponseTime
+            );
+            return respPacket;
+        }
+
+        return null;
+    };
+
+    ubxPacketToBinary = ubxPacket => {
+        const payLen = ubxPacket.payload.byteLength;
+        const packetLen = payLen + PAYLOAD_OFFSET + 2;
+        const buffer = new Uint8Array(new ArrayBuffer(packetLen));
+        buffer[0] = UBX_SYNCH_1;
+        buffer[1] = UBX_SYNCH_2;
+        buffer[2] = ubxPacket.class;
+        buffer[3] = ubxPacket.type;
+        const len = new DataView(new ArrayBuffer(2));
+        //len.setUint16(0, ubxPacket.payload.byteLength, true);
+        //buffer[4] = len.getUint8(0);
+        //buffer[5] = len.getUint8(1);
+        buffer[4] = ubxPacket.payload.byteLength & 0xff;
+        buffer[5] = ubxPacket.payload.byteLength >> 8;
+        const payload = new Uint8Array(buffer.buffer);
+        for (const i = 0; i < payLen; i++) {
+            payload[i] = ubxPacket.payload.getUint8(i);
+        }
+        ubxPacket = this.calcChecksum(ubxPacket);
+        buffer[packetLen - 2] = ubxPacket.checksumA;
+        buffer[packetLen - 1] = ubxPacket.checksumB;
+
+        return buffer;
+    };
+
+    calcChecksum = ubxPacket => {
+        ubxPacket.checksumA = 0;
+        ubxPacket.checksumB = 0;
+
+        ubxPacket.checksumA += ubxPacket.class;
+        ubxPacket.checksumB += ubxPacket.checksumA;
+
+        ubxPacket.checksumA += ubxPacket.type;
+        ubxPacket.checksumB += ubxPacket.checksumA;
+
+        ubxPacket.checksumA += ubxPacket.payload.byteLength & 0xff;
+        ubxPacket.checksumB += ubxPacket.checksumA;
+
+        ubxPacket.checksumA += ubxPacket.payload.byteLength >> 8;
+        ubxPacket.checksumB += ubxPacket.checksumA;
+
+        for (const i = 0; i < ubxPacket.payload.byteLength; i++) {
+            ubxPacket.checksumA += ubxPacket.payload.getUint8(i);
+            ubxPacket.checksumB += ubxPacket.checksumA;
+        }
+
+        return ubxPacket;
+    };
+
+    waitResponse = (classId, msgId, maxWait = 250) => {
+        return new Promise((reslove, reject) => {
+            const event = UbxDecoder._emits.ubxPacket;
+            let timeStart = new Date();
+            let packet = null;
+            const callback = ubxPacket => {
+                if (!ubxPacket) {
+                    return;
+                }
+                if (ubxPacket.class == classId && ubxPacket.type == msgId) {
+                    packet = ubxPacket;
+                }
+            };
+
+            this.on(event, callback);
+
+            while (packet == null) {
+                if (new Date() - timeStart >= maxWait) {
+                    break;
+                }
+            }
+            this.off(event, callback);
+            if (packet != null) {
+                this.emit('ubxresp', packet);
+            }
+            reslove(packet);
+        });
+    };
 }
