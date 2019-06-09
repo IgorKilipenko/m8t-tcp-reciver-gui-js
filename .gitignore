@@ -64,3 +64,5 @@ dist/
 libs/
 
 user-config.js
+yarn.lock
+.vscode/
