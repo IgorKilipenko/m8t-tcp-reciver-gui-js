@@ -9,12 +9,67 @@ import { inject, observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { serverEvents, events as EVENTS } from '../components/server-events';
 import { ClassIds, NavMessageIds } from '../model/ublox';
+import { EventEmitter } from 'events';
 
 //import { UbxDecoder, ClassIds, NavMessageIds } from '../model/ublox';
 
-const api = new ApiSocket();
+//const api = new ApiSocket();
+
+
+
+
+class MainInterval extends EventEmitter {
+    constructor() {
+        super();
+    }
+
+    _timeStart = null;
+    _interval = 1000;
+    _enabled = false;
+    _inrevalPrt = null;
+
+    start = (interval, args) => {
+        if (this._enabled) {
+            return false;
+        }
+        this._interval = interval;
+        this._timeStart = new Date();
+        this._inrevalPrt = setInterval(
+            args => {
+                this.emit('interval', {
+                    totalTime: new Date() - this._timeStart,
+                    interval: this._interval,
+                    args
+                });
+            },
+            this._interval,
+            args
+        );
+        this._enabled = true;
+        return true;
+    };
+
+    stop = () => {
+        if (this._enabled && this._inrevalPrt) {
+            clearInterval(this._inrevalPrt);
+            this._enabled = false;
+            this._inrevalPrt = null;
+            this.emit('stop', {totalTime: new Date() - this._timeStart, interval: this._interval})
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    get enabled() {
+        return this._enabled;
+    }
+}
 
 const styles = theme => ({});
+
+const _mainInterval = new MainInterval();
+const _updateErrors = 0;
 
 @inject('apiStore')
 @inject('serverEventStore')
@@ -30,15 +85,35 @@ class App extends React.Component {
         //this.decoder = new UbxDecoder();
     }
 
+
     handleServerEvents = (event, msg) => {
         //console.debug("msg app", {event, msg})
         this.props.serverEventStore.setMessage(event, msg);
     };
 
+    updateAllApiState = () => {
+        if (this.props.apiStore.updateServerState() != null){
+            this._updateErrors += 1
+        }
+        if (this.props.apiStore.updateReceiverState() != null){
+            this._updateErrors += 1
+        }
+        if (this.props.apiStore.updateNtripState() != null){
+            this._updateErrors += 1
+        }
+    }
+
+    _updater = (args) => {
+        this.updateAllApiState();
+        serverEvents.pongUbxWs();
+    }
+
     componentDidMount = () => {
-        this.props.apiStore.updateServerState();
-        this.props.apiStore.updateReceiverState();
-        this.props.apiStore.updateNtripState();
+        console.debug('Mounted APP');
+
+        this.updateAllApiState();
+        _mainInterval.on('interval', this._updater);
+
 
         this.timeoutHandler = setTimeout(() => {
             this.props.apiStore.updateWiFiList();
@@ -47,11 +122,11 @@ class App extends React.Component {
         serverEvents.onDebugMessage(msg =>
             this.handleServerEvents(EVENTS.debug, msg)
         );
-        serverEvents.onUbxMessage(msg => {
+        serverEvents.onUbxNavMessage(msg => {
             //console.log('Nav msg');
-            if (msg && msg.class === ClassIds.NAV){
+            if (msg && msg.class === ClassIds.NAV) {
                 //this.handleServerEvents(EVENTS.ubxNav, msg);
-                switch (msg.type){
+                switch (msg.type) {
                     case NavMessageIds.PVT:
                         this.props.serverEventStore.setPvtMessage(msg);
                         break;
@@ -60,15 +135,17 @@ class App extends React.Component {
                         break;
                 }
             }
-            
         });
-
     };
 
     componentWillUnmount = () => {
+        console.debug('Unmount APP');
+
         if (this.timeoutHandler) {
             clearTimeout(this.timeoutHandler);
         }
+
+        _mainInterval.off('interval', this._updater);
     };
 
     render() {
