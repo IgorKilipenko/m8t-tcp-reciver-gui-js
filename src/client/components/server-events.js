@@ -7,7 +7,9 @@ const events = {
     ubxNav: 'ubxnav',
     ubxMsg: 'ubxmsg',
     receiverData: 'gpsraw',
-    wsMsg: 'wsmsg'
+    wsMsg: 'wsmsg',
+    ubxWsClose: 'ubxwsclose',
+    ubxWsOpen: 'ubxWsOpen'
 };
 
 class ServerEvents extends EventEmitter {
@@ -21,38 +23,58 @@ class ServerEvents extends EventEmitter {
         this.es = new EventSource(
             DEVELOPMENT ? `http://${REMOTE_EVENTS_URL}` : EVENTS_URL
         );
+
+        this.decoder = new UbxDecoder(this.ws);
+        this.decoder.on(UbxDecoder.EMITS.ubxPacket, packet => {
+            this.emit(events.ubxMsg, packet);
+        });
+        this.decoder.on(UbxDecoder.EMITS.pvtMsg, msg => {
+            this.emit(events.ubxNav, msg);
+        });
+        this.decoder.on(UbxDecoder.EMITS.hpposllh, msg => {
+            this.emit(events.ubxNav, msg);
+        });
+
         this.ws.onmessage = e => {
             this.emit(events.wsMsg, e);
+            if (e.data && e.data instanceof ArrayBuffer) {
+                const buf = new Uint8Array(e.data);
+                buf.forEach(b => {
+                    this.decoder.inputData(b);
+                });
+            }
         };
-        this.decoder = new UbxDecoder();
+
+        this.ws.onclose = e => {
+            this._wsClosed = true;
+            this.emit(events.ubxWsClose, e);
+        };
+        this.ws.onopen = e => {
+            this._wsClosed = false;
+            this.emit(events.ubxWsOpen, e);
+        };
+        this.ws.onerror = err => {
+            this._wsClosed = true;
+            console.error(err);
+            this.ws.close();
+        }
     }
 
+    _wsClosed = true;
+
     /**
-     * Pong to WebSocket 
+     * Pong to WebSocket
      *
      * @memberof ServerEvents
      */
     pongUbxWs = () => {
-        this.ws.send(Int16Array.from('PONG'));
-    }
-
-    onWsOpen = callback => {
-        this.ws.onopen = e => {
-            callback(e);
-        };
-    };
-
-    onWsClose = callback => {
-        this.ws.onclose = e => {
-            callback(e);
-        };
-    };
-
-    onWsError = callback => {
-        this.ws.onerror = err => {
-            console.error('ws error', err);
-            callback(err);
-        };
+        if (!this._wsClosed) {
+            try {
+                this.ws.send(Int16Array.from('PONG'));
+            } catch (err) {
+                console.error(err);
+            }
+        }
     };
 
     onWsMessage = callback => {
@@ -99,36 +121,30 @@ class ServerEvents extends EventEmitter {
     };
 
     onUbxMessage = callback => {
-        this.decoder.on(UbxDecoder.EMITS.pvtMsg, msg =>
-            callback(msg)
-        );
-        this.decoder.on(UbxDecoder.EMITS.hpposllh, msg =>
-            callback(msg)
-        );
-
-        this.addWsEventListener(events.wsMsg, e => {
-            if (e.data && e.data instanceof ArrayBuffer) {
-                const buf = new Uint8Array(e.data);
-                buf.forEach(b => {
-                    this.decoder.inputData(b);
-                });
-            }
+        this.addWsEventListener(events.ubxMsg, msg => {
+            callback(msg);
         });
     };
 
-    onReceiverData = callback => {
-        this.ws.onmessage = e => {
-            if (e.data instanceof ArrayBuffer) {
-                const buf = new Uint8Array(e.data);
-                buf.forEach(b => {
-                    const res = this.decoder.inputData(b);
-                    if (res && res.classId == ClassIds.NAV) {
-                        callback(res);
-                    }
-                });
-            }
-        };
+    onUbxNavMessage = callback => {
+        this.addWsEventListener(events.ubxNav, msg => {
+            callback(msg);
+        });
     };
+
+    //onReceiverData = callback => {
+    //    this.ws.onmessage = e => {
+    //        if (e.data instanceof ArrayBuffer) {
+    //            const buf = new Uint8Array(e.data);
+    //            buf.forEach(b => {
+    //                const res = this.decoder.inputData(b);
+    //                if (res && res.classId == ClassIds.NAV) {
+    //                    callback(res);
+    //                }
+    //            });
+    //        }
+    //    };
+    //};
 
     addWsEventListener = (event, callback) => {
         this.on(event, callback);
