@@ -32,7 +32,7 @@ class MainInterval extends EventEmitter {
         if (this._enabled) {
             return false;
         }
-        this._interval = interval;
+        this._interval = interval || 1000;
         this._timeStart = new Date();
         this._inrevalPrt = setInterval(
             args => {
@@ -69,6 +69,7 @@ class MainInterval extends EventEmitter {
 const styles = theme => ({});
 
 const _mainInterval = new MainInterval();
+_mainInterval.start(5000);
 const _updateErrors = 0;
 
 @inject('apiStore')
@@ -105,15 +106,15 @@ class App extends React.Component {
 
     _updater = (args) => {
         this.updateAllApiState();
-        serverEvents.pongUbxWs();
+        //serverEvents.pongUbxWs();
     }
+    _lock = false;
 
     componentDidMount = () => {
         console.debug('Mounted APP');
 
         this.updateAllApiState();
         _mainInterval.on('interval', this._updater);
-
 
         this.timeoutHandler = setTimeout(() => {
             this.props.apiStore.updateWiFiList();
