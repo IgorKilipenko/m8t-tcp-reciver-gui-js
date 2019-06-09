@@ -27,6 +27,15 @@ class ServerEvents extends EventEmitter {
         this.decoder = new UbxDecoder();
     }
 
+    /**
+     * Pong to WebSocket 
+     *
+     * @memberof ServerEvents
+     */
+    pongUbxWs = () => {
+        this.ws.send(Int16Array.from('PONG'));
+    }
+
     onWsOpen = callback => {
         this.ws.onopen = e => {
             callback(e);
