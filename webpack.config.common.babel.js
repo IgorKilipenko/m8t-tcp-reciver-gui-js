@@ -1,15 +1,15 @@
 import webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import CleanWebpackPlugin from 'clean-webpack-plugin';
+import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import autoprefixer from 'autoprefixer';
 import precss from 'precss';
 import path from 'path';
 //import { merge } from 'rxjs';
-import {API_KEY} from './user-config';
+import { API_KEY } from './user-config';
 
 const host = 'localhost';
 const port = 3001;
-const remoteDebugHost = '192.168.1.58';
+const remoteDebugHost = '192.168.1.51';
 
 const baseConfig = {
     entry: ['./src/client/index.js'],
