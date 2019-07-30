@@ -4,6 +4,8 @@ module.exports = {
         [
             '@babel/preset-env',
             {
+                useBuiltIns: 'usage',
+                corejs: 3,
                 targets: {
                     esmodules: true
                 }
@@ -11,9 +13,5 @@ module.exports = {
         ],
         '@babel/preset-react'
     ],
-    plugins: [
-        ...stages.Stage1,
-        ...stages.Stage2,
-        ...stages.Stage3,
-    ]
+    plugins: [...stages.Stage1, ...stages.Stage2, ...stages.Stage3]
 };
