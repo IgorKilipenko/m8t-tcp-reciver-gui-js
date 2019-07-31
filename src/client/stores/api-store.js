@@ -1,5 +1,7 @@
-import { observable, computed, action } from 'mobx';
+import { observable, computed, action, configure, runInAction } from 'mobx';
 import ApiSocket from '../components/api-socket';
+
+configure({ enforceActions: 'observed' });
 
 const api = new ApiSocket();
 
@@ -73,7 +75,9 @@ export default class ApiStore {
             const res = await api.getNtripState();
             console.debug({ res });
             if (res && res.data) {
-                this._ntripState.enabled = res.data.enabled;
+                runInAction(() => {
+                    this._ntripState.enabled = res.data.enabled;
+                });
                 return null;
             }
         } catch (err) {
@@ -86,7 +90,9 @@ export default class ApiStore {
         try {
             const res = await api.setNtripClient(enable, options);
             if (res && res.data) {
-                this.setNtripState(res.data);
+                runInAction(() => {
+                    this.setNtripState(res.data);
+                });
                 return res;
             }
         } catch (err) {
@@ -152,8 +158,11 @@ export default class ApiStore {
     async updateServerState() {
         try {
             const res = await api.getServerInfo();
-            this._serverState.serverStart = Date.now() - res.data.serverTime;
-            this._serverState.sdSuccess = res.data.sdSuccess;
+            runInAction(() => {
+                this._serverState.serverStart =
+                    Date.now() - res.data.serverTime;
+                this._serverState.sdSuccess = res.data.sdSuccess;
+            });
             return null;
         } catch (err) {
             return this.sendApiError(err, api.components.server);
@@ -183,13 +192,15 @@ export default class ApiStore {
             //    timeStart,
             //    timeReceive
             //};
-            this.setReceiverState({
-                enabled,
-                timeStart,
-                timeReceive,
-                writeToSd,
-                sendToTcp,
-                lastUpdate: new Date()
+            runInAction(() => {
+                this.setReceiverState({
+                    enabled,
+                    timeStart,
+                    timeReceive,
+                    writeToSd,
+                    sendToTcp,
+                    lastUpdate: new Date()
+                });
             });
             return null;
         } catch (err) {
@@ -210,9 +221,11 @@ export default class ApiStore {
             const res = await api.getWifiList();
             //this._wifiState.list = res.data;
             //this._wifiState.lastUpdate = new Date();
-            this.setWiFiState({
-                list: res.data,
-                lastUpdate: new Date()
+            runInAction(() => {
+                this.setWiFiState({
+                    list: res.data,
+                    lastUpdate: new Date()
+                });
             });
             return null;
         } catch (err) {
@@ -224,10 +237,12 @@ export default class ApiStore {
     async updateWiFiInfo() {
         try {
             const res = await api.getWifiInfo();
-            this.setWiFiState({
-                wifiMode: res.data.mode || api.WiFiModes.unknown,
-                apInfo: res.data.ap || null,
-                staInfo: res.data.sta || null
+            runInAction(() => {
+                this.setWiFiState({
+                    wifiMode: res.data.mode || api.WiFiModes.unknown,
+                    apInfo: res.data.ap || null,
+                    staInfo: res.data.sta || null
+                });
             });
 
             return null;
