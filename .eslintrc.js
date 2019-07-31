@@ -20,14 +20,9 @@ module.exports = {
     rules: {
         strict: [2, 'never'],
         'prettier/prettier': 'warn',
+        'react-hooks/rules-of-hooks': 'error',
+        'react-hooks/exhaustive-deps': 'warn'
     },
-    plugins: [
-        'flowtype',
-        'babel',
-        'prettier',
-        'html'
-    ],
-    extends: [
-        "plugin:flowtype/recommended"
-    ],
+    plugins: ['flowtype', 'babel', 'prettier', 'html', 'react-hooks'],
+    extends: ['plugin:flowtype/recommended']
 };
