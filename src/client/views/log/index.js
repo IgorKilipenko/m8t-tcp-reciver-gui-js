@@ -1,41 +1,49 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 //import { serverEvents } from '../../components/server-events';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import { inject, observer } from 'mobx-react';
-import { withRouter } from 'react-router-dom';
+import { observer } from 'mobx-react';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 
-const styles = theme => ({
+/* Migrate to React hooks" */
+import useReactRouter from 'use-react-router';
+import { MobXProviderContext } from 'mobx-react';
+function useStores() {
+    return React.useContext(MobXProviderContext);
+}
+////////////////////////////
+
+const useStyles = makeStyles(theme => ({
     root: {
         width: '100%',
         maxWidth: 360,
         backgroundColor: theme.palette.background.paper
     }
-});
+}));
 
-@inject('apiStore')
-@inject('serverEventStore')
-@inject('uiStore')
-@withRouter
-@observer
-class LogView extends React.Component {
-    state = {
+const LogView = observer(props => {
+    const classes = useStyles();
+    const theme = useTheme();
+
+    const { history, location, match } = useReactRouter();
+    const stores = useStores();
+    const { uiStore, serverEventStore } = stores;
+    const activeTab = uiStore.state.logView.activeTab;
+    const [state, setState] = React.useState({
         messages: []
+    });
+
+    const handleTabChange = (event, value) => {
+        uiStore.setState({ logView: { activeTab: value } });
     };
 
-    handleTabChange = (event, value) => {
-        this.props.uiStore.setState({ logView: { activeTab: value } });
-    };
-    componentDidMount = () => {};
-
-    renderTabContent = (classes, msgs) => {
+    const renderTabContent = (classes, msgs) => {
         if (msgs.length > 50) {
             msgs = msgs.slice(msgs.length - 50);
         }
@@ -50,28 +58,24 @@ class LogView extends React.Component {
         );
     };
 
-    render() {
-        const { classes, uiStore } = this.props;
-        const activeTab = uiStore.state.logView.activeTab;
-        return (
-            <div>
-                <Tabs value={activeTab} onChange={this.handleTabChange}>
-                    <Tab label="Server LOG" />
-                    <Tab label="Ublox messages" />
-                </Tabs>
-                {activeTab === 0 &&
-                    this.renderTabContent(
+    return (
+        <div>
+            <Tabs value={activeTab} onChange={handleTabChange}>
+                <Tab label="Server LOG" />
+                <Tab label="Ublox messages" />
+            </Tabs>
+            {activeTab === 0 &&
+                renderTabContent(
+                    classes,
+                    serverEventStore.debugMessage
+                )}
+            {/*activeTab === 1 &&
+                    renderTabContent(
                         classes,
-                        this.props.serverEventStore.debugMessage
-                    )}
-                {/*activeTab === 1 &&
-                    this.renderTabContent(
-                        classes,
-                        this.props.serverEventStore.ubxNavMessage
+                        serverEventStore.ubxNavMessage
                     )*/}
-            </div>
-        );
-    }
-}
+        </div>
+    );
+});
 
-export default withStyles(styles, { withTheme: true })(LogView);
+export default LogView;

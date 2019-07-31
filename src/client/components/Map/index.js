@@ -1,11 +1,11 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 import GoogleMapReact from 'google-map-react';
 import { API_KEY } from '../../../../user-config';
 import GpsFixedIcon from '@material-ui/icons/GpsFixed';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     root: {
         width: '100%',
         height: '100%',
@@ -13,8 +13,8 @@ const styles = theme => ({
             'min-height': 500,
             overflow: ['auto', '!important']
         }
-    },
-});
+    }
+}));
 
 const AnyReactComponent = ({ text }) => (
     <div>
@@ -22,43 +22,43 @@ const AnyReactComponent = ({ text }) => (
     </div>
 );
 
-class GoogleMap extends React.Component {
-    static defaultProps = {
-        center: {
-            lat: 54.93,
-            lng: 82.93
-        },
-        zoom: 15
-    };
+const defaultProps = {
+    center: {
+        lat: 54.93,
+        lng: 82.93
+    },
+    zoom: 15
+};
 
-    handleApiLoaded = (map, maps) => {
+const GoogleMap = props => {
+    const classes = useStyles();
+    const theme = useTheme();
+
+    const handleApiLoaded = (map, maps) => {
         console.log({ map, maps });
     };
 
-    render = () => {
-        const { classes } = this.props;
-        return (
-            <div className={classes.root}>
-                <GoogleMapReact
-                    bootstrapURLKeys={{ key: API_KEY }}
-                    //defaultCenter={GoogleMap.defaultProps.center}
-                    defaultZoom={GoogleMap.defaultProps.zoom}
-                    center={this.props.center}
-                    zoom={this.props.zoom}
-                    yesIWantToUseGoogleMapApiInternals
-                    onGoogleApiLoaded={({ map, maps }) =>
-                        this.handleApiLoaded(map, maps)
-                    }
-                >
-                    <AnyReactComponent
-                        lat={this.props.center.lat}
-                        lng={this.props.center.lng}
-                        text="My Marker"
-                    />
-                </GoogleMapReact>
-            </div>
-        );
-    };
-}
+    return (
+        <div className={classes.root}>
+            <GoogleMapReact
+                bootstrapURLKeys={{ key: API_KEY }}
+                //defaultCenter={GoogleMap.defaultProps.center}
+                defaultZoom={defaultProps.zoom}
+                center={props.center}
+                zoom={props.zoom}
+                yesIWantToUseGoogleMapApiInternals
+                onGoogleApiLoaded={({ map, maps }) =>
+                    handleApiLoaded(map, maps)
+                }
+            >
+                <AnyReactComponent
+                    lat={props.center.lat}
+                    lng={props.center.lng}
+                    text="My Marker"
+                />
+            </GoogleMapReact>
+        </div>
+    );
+};
 
-export default withStyles(styles, { withTheme: true })(GoogleMap);
+export default GoogleMap;

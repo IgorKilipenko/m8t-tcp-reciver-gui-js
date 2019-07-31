@@ -1,3 +1,3 @@
-import CorrectionsView from './corrections';
+import CorrectionsView, * as CorrectionsViewInfo from './corrections';
 
-export {CorrectionsView}
+export {CorrectionsView, CorrectionsViewInfo}

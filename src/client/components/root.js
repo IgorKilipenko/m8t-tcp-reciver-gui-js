@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { inject, observer } from 'mobx-react';
-import { withRouter } from 'react-router-dom';
+import { observer } from 'mobx-react';
+//import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -26,13 +26,21 @@ import StreamIcon from '@material-ui/icons/Input';
 import SpeakerPhoneIcon from '@material-ui/icons/SpeakerPhone';
 import { Link } from 'react-router-dom';
 
-import { CorrectionsView } from '../views';
+import { CorrectionsView, CorrectionsViewInfo } from '../views';
+
+/* Migrate to React hooks" */
+import useReactRouter from 'use-react-router';
+import { MobXProviderContext } from 'mobx-react';
+function useStores() {
+    return React.useContext(MobXProviderContext);
+}
+////////////////////////////
 
 import axios from 'axios';
 
 const drawerWidth = 240;
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     root: {
         display: 'flex'
     },
@@ -76,9 +84,9 @@ const styles = theme => ({
             duration: theme.transitions.duration.leavingScreen
         }),
         overflowX: 'hidden',
-        width: theme.spacing.unit * 7 + 1,
+        width: theme.spacing(7) + 1,
         [theme.breakpoints.up('sm')]: {
-            width: theme.spacing.unit * 9 + 1
+            width: theme.spacing(9) + 1
         }
     },
     toolbar: {
@@ -90,7 +98,7 @@ const styles = theme => ({
     },
     content: {
         flexGrow: 1,
-        padding: theme.spacing.unit * 3
+        padding: theme.spacing(3)
     },
 
     /**App Bar */
@@ -99,53 +107,59 @@ const styles = theme => ({
     },
     sectionDesktop: {
         display: 'flex',
-        paddingRight: theme.spacing.unit * 3
+        paddingRight: theme.spacing(3)
         //[theme.breakpoints.up('md')]: {
         //    display: 'flex'
         //}
     }
-});
+}));
 
-@inject('apiStore')
-@inject('uiStore')
-@withRouter
-@observer
-class MiniDrawer extends React.Component {
-    state = {
+const MiniDrawer = observer(props => {
+    console.debug('PROPS', { props });
+    const { history, location, match } = useReactRouter();
+    const stores = useStores();
+    console.debug('STORES', { stores });
+    const { apiStore, uiStore } = stores;
+    const [state, setState] = React.useState({
         open: false,
-        status: '',
+        status: null,
         pathname: null
+    });
+    const classes = useStyles();
+    const theme = useTheme();
+
+    React.useEffect(() => {
+        console.info('MiniDrawer useEffect START');
+        return () => {
+            console.info('MiniDrawer useEffect STOP');
+        };
+    }, []);
+
+    const handleDrawerOpen = () => {
+        setState({ open: true });
     };
 
-    componentDidMount = () => {
-        console.debug({ props: this.props });
+    const handleDrawerClose = () => {
+        setState({ open: false });
     };
 
-    handleDrawerOpen = () => {
-        this.setState({ open: true });
-    };
-
-    handleDrawerClose = () => {
-        this.setState({ open: false });
-    };
-
-    renderAppBar = () => {
-        const { classes, theme } = this.props;
-        const { pathname } = this.props.location;
+    const renderAppBar = () => {
+        //const classes = useState();
+        const { pathname } = location;
         return (
             <AppBar
                 position="fixed"
                 className={classNames(classes.appBar, {
-                    [classes.appBarShift]: this.state.open
+                    [classes.appBarShift]: state.open
                 })}
             >
-                <Toolbar disableGutters={!this.state.open}>
+                <Toolbar disableGutters={!state.open}>
                     <IconButton
                         color="inherit"
                         aria-label="Open drawer"
-                        onClick={this.handleDrawerOpen}
+                        onClick={handleDrawerOpen}
                         className={classNames(classes.menuButton, {
-                            [classes.hide]: this.state.open
+                            [classes.hide]: state.open
                         })}
                     >
                         <MenuIcon />
@@ -164,26 +178,25 @@ class MiniDrawer extends React.Component {
         );
     };
 
-    renderDrawer = () => {
-        const { classes, theme, apiStore } = this.props;
-        const { pathname } = this.props.location;
+    const renderDrawer = () => {
+        const { pathname } = location;
         return (
             <Drawer
                 variant="permanent"
                 className={classNames(classes.drawer, {
-                    [classes.drawerOpen]: this.state.open,
-                    [classes.drawerClose]: !this.state.open
+                    [classes.drawerOpen]: state.open,
+                    [classes.drawerClose]: !state.open
                 })}
                 classes={{
                     paper: classNames({
-                        [classes.drawerOpen]: this.state.open,
-                        [classes.drawerClose]: !this.state.open
+                        [classes.drawerOpen]: state.open,
+                        [classes.drawerClose]: !state.open
                     })
                 }}
-                open={this.state.open}
+                open={state.open}
             >
                 <div className={classes.toolbar}>
-                    <IconButton onClick={this.handleDrawerClose}>
+                    <IconButton onClick={handleDrawerClose}>
                         {theme.direction === 'rtl' ? (
                             <ChevronRightIcon />
                         ) : (
@@ -270,14 +283,14 @@ class MiniDrawer extends React.Component {
                     {/*           CorrectionsView                 */}
                     <ListItem
                         button
-                        key={CorrectionsView.routeInfo.name}
+                        key={CorrectionsViewInfo.routeInfo.name}
                         component={Link}
-                        to={CorrectionsView.routeInfo.path}
-                        selected={CorrectionsView.routeInfo.path === pathname}
+                        to={CorrectionsViewInfo.routeInfo.path}
+                        selected={CorrectionsViewInfo.routeInfo.path === pathname}
                     >
                         <ListItemIcon>
-                            <CorrectionsView.icons.main
-                                {...(this.props.apiStore.ntripState.enabled
+                            <CorrectionsViewInfo.icons.main
+                                {...(apiStore.ntripState.enabled
                                     ? { color: 'secondary' }
                                     : {})}
                             />
@@ -289,27 +302,17 @@ class MiniDrawer extends React.Component {
         );
     };
 
-    render() {
-        const { classes, theme } = this.props;
+    return (
+        <div className={classes.root}>
+            {renderAppBar()}
+            {renderDrawer()}
+            <main className={classes.content}>
+                <div className={classes.toolbar} />
+                {/*props.children && React.Children.map(props.children, (ch) => <div>{ch}</div>)*/}
+                {props.children && React.Children.only(props.children)}
+            </main>
+        </div>
+    );
+});
 
-        return (
-            <div className={classes.root}>
-                {this.renderAppBar()}
-                {this.renderDrawer()}
-                <main className={classes.content}>
-                    <div className={classes.toolbar} />
-                    {/*this.props.children && React.Children.map(this.props.children, (ch) => <div>{ch}</div>)*/}
-                    {this.props.children &&
-                        React.Children.only(this.props.children)}
-                </main>
-            </div>
-        );
-    }
-}
-
-MiniDrawer.propTypes = {
-    classes: PropTypes.object.isRequired,
-    theme: PropTypes.object.isRequired
-};
-
-export default withStyles(styles, { withTheme: true })(MiniDrawer);
+export default MiniDrawer;

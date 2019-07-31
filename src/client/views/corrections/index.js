@@ -1,15 +1,21 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/styles';
-import clsx from 'clsx';
-import { inject, observer } from 'mobx-react';
-import { withRouter } from 'react-router-dom';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { observer } from 'mobx-react';
 import NtripClient from '../../components/NtripClient';
 import SignalCellularAlt from '@material-ui/icons/SignalCellularAlt';
 
 import { NTRIP_CLIENT_DEF as userConfig } from '../../../../user-config';
 
-const styles = theme => ({
+/* Migrate to React hooks" */
+import useReactRouter from 'use-react-router';
+import { MobXProviderContext } from 'mobx-react';
+function useStores() {
+    return React.useContext(MobXProviderContext);
+}
+////////////////////////////
+
+const useStyles = makeStyles(theme => ({
     root: {
         display: 'flex'
     },
@@ -18,76 +24,84 @@ const styles = theme => ({
         marginRight: theme.spacing.unit,
         width: 'auto'
     }
-});
+}));
 
-@inject('apiStore')
-@inject('uiStore')
-@inject('serverEventStore')
-@withRouter
-@observer
-class CorrectionsView extends React.Component {
-    static icons = {
-        main: SignalCellularAlt
-    };
+const icons = {
+    main: SignalCellularAlt
+};
 
-    static routeInfo = {
-        path: '/corrections',
-        name: 'corrections'
-    };
+const routeInfo = {
+    path: '/corrections',
+    name: 'corrections'
+};
 
-    ntripConnInfo = userConfig;
+const CorrectionsView = observer(props => {
+    const classes = useStyles();
+    const theme = useTheme();
 
-    handlerNtripConnect = async ntripOptions => {
-        const res = this.props.apiStore.ntripAction(true, ntripOptions);
-        this.props.apiStore.updateNtripState();
+    const { history, location, match } = useReactRouter();
+    const { apiStore } = useStores();
+
+    const ntripConnInfo = userConfig;
+    let localStorage = (window && window.localStorage) ?  window.localStorage : null;
+
+    const handlerNtripConnect = async ntripOptions => {
+        const res = apiStore.ntripAction(true, ntripOptions);
+        apiStore.updateNtripState();
         if (!localStorage) {
             console.warn('localStorage is null');
         } else if (res && res.data && res.data.enabled) {
-            const json = JSON.stringify(this.state.ntripClient);
+            const json = JSON.stringify(state.ntripClient);
             localStorage.setItem('ntripClient', json);
         }
     };
-    handlerNtripDisconnect = async ntripOptions => {
-        this.props.apiStore.ntripAction(false, ntripOptions);
-        //this.props.apiStore.updateNtripState();
+    const handlerNtripDisconnect = async ntripOptions => {
+        apiStore.ntripAction(false, ntripOptions);
+        //apiStore.updateNtripState();
     };
 
-    componentDidMount = () => {
-        this.props.apiStore.updateNtripState();
+    const componentDidMount = () => {
+        apiStore.updateNtripState();
         if (!localStorage) {
             console.warn('localStorage is null');
         } else {
             const json = localStorage.getItem('ntripClient');
-            console.debug({json});
+            console.debug({ json });
             if (json) {
                 try {
-                    this.ntripConnInfo = JSON.parse(json);
-                    console.debug({ connectionInfo: this.ntripConnInfo});
+                    ntripConnInfo = JSON.parse(json);
+                    console.debug({ connectionInfo: ntripConnInfo });
                 } catch (err) {
                     console.warn(err);
                 }
             }
-            if (!this.ntripConnInfo) {
-                this.ntripConnInfo = userConfig;
+            if (!ntripConnInfo) {
+                ntripConnInfo = userConfig;
             }
         }
     };
 
-    render() {
-        const { classes } = this.props;
-        console.debug({ NTRIP: this.props.apiStore.ntripState.enabled });
-        return (
-            <div className={classes.root}>
-                <NtripClient
-                    connected={this.props.apiStore.ntripState.enabled}
-                    open={true}
-                    handleConnect={this.handlerNtripConnect}
-                    handleDisconnect={this.handlerNtripDisconnect}
-                    connectionInfo={this.ntripConnInfo}
-                />
-            </div>
-        );
-    }
-}
+    React.useEffect(() => {
+        console.info('CorrectionsView useEffect START');
+        componentDidMount();
+        return () => {
+            console.info('CorrectionsView useEffect STOP');
+        };
+    }, []);
 
-export default withStyles(styles, { withTheme: true })(CorrectionsView);
+    console.debug({ NTRIP: apiStore.ntripState.enabled });
+    return (
+        <div className={classes.root}>
+            <NtripClient
+                connected={apiStore.ntripState.enabled}
+                open={true}
+                handleConnect={handlerNtripConnect}
+                handleDisconnect={handlerNtripDisconnect}
+                connectionInfo={ntripConnInfo}
+            />
+        </div>
+    );
+});
+
+export default CorrectionsView;
+export { routeInfo, icons };

@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
@@ -14,7 +14,7 @@ import classNames from 'classnames';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     margin: {
         margin: theme.spacing.unit
     },
@@ -23,40 +23,42 @@ const styles = theme => ({
         marginRight: theme.spacing.unit,
         width: 'auto'
     }
-});
+}));
 
-class LoginDialog extends React.Component {
-    state = {
+const LoginDialog = props => {
+    const classes = useStyles();
+    const theme = useTheme();
+    const { open, ssid, onCloseDialog } = props;
+
+    const [state, setState] = React.useState({
         showPassword: false,
         login: ''
+    });
+
+    const handleClose = () => {
+        setState({ open: false });
     };
 
-    handleClose = () => {
-        this.setState({ open: false });
+    const handleChange = prop => event => {
+        setState({ [prop]: event.target.value });
     };
 
-    handleChange = prop => event => {
-        this.setState({ [prop]: event.target.value });
+    const handleClickShowPassword = () => {
+        setState(state => ({ showPassword: !state.showPassword }));
     };
 
-    handleClickShowPassword = () => {
-        this.setState(state => ({ showPassword: !state.showPassword }));
-    };
-
-    render() {
-        const { classes, open, ssid, onCloseDialog } = this.props;
-        return (
-            <div>
-                <Dialog
-                    open={open}
-                    onClose={this.handleClose}
-                    aria-labelledby="form-dialog-title"
-                >
-                    <DialogTitle id="form-dialog-title">
-                        {`Enter yore login ${ssid ? 'to ' + ssid : ''}`}
-                    </DialogTitle>
-                    <DialogContent>
-                        {/*<TextField
+    return (
+        <div>
+            <Dialog
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="form-dialog-title"
+            >
+                <DialogTitle id="form-dialog-title">
+                    {`Enter yore login ${ssid ? 'to ' + ssid : ''}`}
+                </DialogTitle>
+                <DialogContent>
+                    {/*<TextField
                             id="outlined-adornment-login"
                             className={classNames(
                                 classes.margin,
@@ -64,80 +66,70 @@ class LoginDialog extends React.Component {
                             )}
                             //variant="outlined"
                             label="Login"
-                            value={this.state.weight}
-                            onChange={this.handleChange('login')}
+                            value={state.weight}
+                            onChange={handleChange('login')}
                         />*/}
-                        <TextField
-                            id="outlined-adornment-password"
-                            className={classNames(
-                                classes.margin,
-                                classes.textField
-                            )}
-                            variant="outlined"
-                            type={this.state.showPassword ? 'text' : 'password'}
-                            label="Password"
-                            autoComplete="current-password"
-                            value={this.state.password}
-                            onChange={this.handleChange('password')}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            aria-label="Toggle password visibility"
-                                            onClick={
-                                                this.handleClickShowPassword
-                                            }
-                                        >
-                                            {this.state.showPassword ? (
-                                                <VisibilityOff />
-                                            ) : (
-                                                <Visibility />
-                                            )}
-                                        </IconButton>
-                                    </InputAdornment>
-                                )
-                            }}
-                        />
-                    </DialogContent>
-                    <DialogActions>
-                        <Button
-                            onClick={() => {
-                                onCloseDialog &&
-                                    onCloseDialog(
-                                        ssid,
-                                        this.state.password,
-                                        false
-                                    );
-                            }}
-                            color="primary"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={() => {
-                                onCloseDialog &&
-                                    onCloseDialog(
-                                        ssid,
-                                        this.state.password,
-                                        true
-                                    );
-                            }}
-                            color="primary"
-                        >
-                            Connect
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            </div>
-        );
-    }
-}
+                    <TextField
+                        id="outlined-adornment-password"
+                        className={classNames(
+                            classes.margin,
+                            classes.textField
+                        )}
+                        variant="outlined"
+                        type={state.showPassword ? 'text' : 'password'}
+                        label="Password"
+                        autoComplete="current-password"
+                        value={state.password}
+                        onChange={handleChange('password')}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        aria-label="Toggle password visibility"
+                                        onClick={handleClickShowPassword}
+                                    >
+                                        {state.showPassword ? (
+                                            <VisibilityOff />
+                                        ) : (
+                                            <Visibility />
+                                        )}
+                                    </IconButton>
+                                </InputAdornment>
+                            )
+                        }}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => {
+                            onCloseDialog &&
+                                onCloseDialog(ssid, state.password, false);
+                        }}
+                        color="primary"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            onCloseDialog &&
+                                onCloseDialog(ssid, state.password, true);
+                        }}
+                        color="primary"
+                    >
+                        Connect
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </div>
+    );
+};
 
+/*
 LoginDialog.propTypes = {
     classes: PropTypes.object.isRequired,
     open: PropTypes.bool.isRequired,
     onCloseDialog: PropTypes.func.isRequired,
     ssid: PropTypes.string
-};
+};*/
 
-export default withStyles(styles, { withTheme: true })(LoginDialog);
+export default LoginDialog;

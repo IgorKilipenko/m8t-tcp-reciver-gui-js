@@ -1,25 +1,24 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import ApiSocket from '../../components/api-socket';
-import { inject, observer } from 'mobx-react';
+//import ApiSocket from '../../components/api-socket';
+import { observer } from 'mobx-react';
 import { trace } from 'mobx';
-import { withRouter } from 'react-router-dom';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import CardMedia from '@material-ui/core/CardMedia';
 import Typography from '@material-ui/core/Typography';
-import SdIcon from '@material-ui/icons/SdStorage';
-import IconButton from '@material-ui/core/IconButton';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
+import ReceiverInfo from './components/ReceiverInfo';
+import NavPane from './components/NavPane';
 import GoogleMap from '../../components/Map';
-import NavPane from '../../components/NavPane';
+/* Migrate to React hooks" */
+import useReactRouter from 'use-react-router';
+import { MobXProviderContext } from 'mobx-react';
+function useStores() {
+    return React.useContext(MobXProviderContext);
+}
+////////////////////////////
 
-const api = new ApiSocket();
+//const api = new ApiSocket();
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     root: {
         //display: 'flex'
     },
@@ -35,33 +34,32 @@ const styles = theme => ({
         //maxWidth: 500,
         flexDirection: 'row'
     }
-});
+}));
 
-@inject('apiStore')
-@inject('serverEventStore')
-@withRouter
-@observer
-class ReceiverView extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            timeReceive: 0
-        };
-        this.recTiemeInterval = null;
+const ReceiverView = observer(props => {
+    const classes = useStyles();
+    const theme = useTheme();
 
-    }
+    const { history, location, match } = useReactRouter();
+    const stores = useStores();
+    const { apiStore, serverEventStore } = stores;
+    const [state, setState] = React.useState({
+        timeReceive: 0
+    });
+    let recTiemeInterval = null;
+    const enabled = apiStore.receiverState.enabled;
 
-    enableMobxTrace = enable => {
+    const enableMobxTrace = enable => {
         trace(true);
     };
 
-    getTimeReceive = () => {
-        let date = new Date(this.props.apiStore.timeReceive || 0);
+    const getTimeReceive = () => {
+        let date = new Date(apiStore.timeReceive || 0);
 
-        return this.timeToString(date);
+        return timeToString(date);
     };
 
-    timeToString = date => {
+    const timeToString = date => {
         return (
             ('00' + date.getUTCHours()).slice(-2) +
             ':' +
@@ -75,143 +73,97 @@ class ReceiverView extends React.Component {
         );
     };
 
-    buttonClickHandler = async () => {
-        this.props.apiStore.updateServerState();
+    const buttonClickHandler = async () => {
+        apiStore.updateServerState();
         try {
-            const { enabled } = this.props.apiStore.receiverState;
-            const options = [this.props.apiStore.serverState.sdSuccess, true];
+            const { enabled } = apiStore.receiverState;
+            const options = [apiStore.serverState.sdSuccess, true];
             const res = await api.setReceive(!enabled, ...options);
-            this.props.apiStore.updateReceiverState();
+            apiStore.updateReceiverState();
             if (res.data.enabled) {
-                this.startRecTimeInterval();
+                startRecTimeInterval();
             } else {
-                this.clearRecTimeInterval();
+                clearRecTimeInterval();
             }
         } catch (err) {
             console.log({ err }, this);
         }
     };
 
-    componentDidMount = () => {
-        this.props.apiStore.updateReceiverState();
+    const componentDidMount = () => {
+        apiStore.updateReceiverState();
         setTimeout(() => {
-            this.setState({
-                timeReceive: this.getTimeReceive()
+            setState({
+                timeReceive: getTimeReceive()
             });
             console.log({
-                receiverState: this.props.apiStore.receiverState.enabled
+                receiverState: apiStore.receiverState.enabled
             });
-            if (this.props.apiStore.receiverState.enabled) {
-                this.startRecTimeInterval();
+            if (apiStore.receiverState.enabled) {
+                startRecTimeInterval();
             }
         }, 1000);
     };
 
-    componentWillUnmount = () => {
+    const componentWillUnmount = () => {
         console.log('Unmount receiverView');
-        this.clearRecTimeInterval();
+        clearRecTimeInterval();
     };
 
-    renderGpsTextField = (label, value) => {
-        const { classes } = this.props;
-        return (
-            <Typography
-                className={classes.title}
-                color="textSecondary"
-                gutterBottom
-            >
-                {`${label}: 
-                    ${value ? value : ''}`}
-            </Typography>
-        );
-    };
+    React.useEffect(() => {
+        console.info('ReceiverView useEffect START');
+        componentDidMount();
+        return () => {
+            console.info('ReceiverView useEffect STOP');
+            componentWillUnmount();
+        };
+    }, []);
 
-    renderReceiverInfo = classes => {
-        const sEvents = this.props.serverEventStore;
-        const pvtMessage = sEvents.ubxPvtMessage;
-        const carrierSolution = pvtMessage ? pvtMessage.carrierSolution : null;
-        const poss =
-            carrierSolution && sEvents.ubxHPPOSLLHMessage
-                ? sEvents.ubxHPPOSLLHMessage
-                : pvtMessage;
-
-        return (
-            <Card className={classes.receiverCard}>
-                <CardContent>
-                    {poss && (
-                        <div>
-                            <div>
-                                <NavPane
-                                    position={poss}
-                                    carrierSolution={carrierSolution}
-                                    fixMode={pvtMessage.fixType}
-                                />
-                                <GoogleMap
-                                    center={{
-                                        lng: poss.longitude,
-                                        lat: poss.latitude
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    )}
-                </CardContent>
-                <CardActions>
-                    <IconButton
-                        color="primary"
-                        className={classes.button}
-                        disabled={!this.props.apiStore.serverState.sdSuccess}
-                    >
-                        <SdIcon />
-                    </IconButton>
-                </CardActions>
-            </Card>
-        );
-    };
-
-    clearRecTimeInterval = () => {
-        if (this.recTiemeInterval != null) {
-            clearInterval(this.recTiemeInterval);
-            this.recTiemeInterval = null;
+    const clearRecTimeInterval = () => {
+        if (recTiemeInterval != null) {
+            clearInterval(recTiemeInterval);
+            recTiemeInterval = null;
             console.log('Clear interval');
         }
     };
 
-    startRecTimeInterval = (interval = 1000) => {
-        if (this.recTiemeInterval == null) {
-            this.recTiemeInterval = setInterval(() => {
-                this.setState(prev => ({
-                    timeReceive: this.getTimeReceive()
+    const startRecTimeInterval = (interval = 1000) => {
+        if (recTiemeInterval == null) {
+            recTiemeInterval = setInterval(() => {
+                setState(prev => ({
+                    timeReceive: getTimeReceive()
                 }));
             }, interval);
         }
     };
 
-    render() {
-        const { classes } = this.props;
-        const enabled = this.props.apiStore.receiverState.enabled;
-        return (
-            <div className={classes.root}>
-                {this.renderReceiverInfo(classes)}
-                <Button
-                    variant="outlined"
-                    color={enabled ? 'secondary' : 'primary'}
-                    className={classes.button}
-                    onClick={() => this.buttonClickHandler()}
-                >
-                    {enabled ? 'Stop' : 'Start'}
-                </Button>
-                <Typography
-                    className={classes.title}
-                    color="textSecondary"
-                    gutterBottom
-                    inline={true}
-                >
-                    {`Rec time :  ${this.state.timeReceive} sec`}
-                </Typography>
-            </div>
-        );
-    }
-}
+    return (
+        <div className={classes.root}>
+            <ReceiverInfo
+                navPane={props => (<NavPane {...props}/>)}
+                googleMap={props => (<GoogleMap {...props}/>)}
+                ubxPvtMessage={serverEventStore.ubxPvtMessage}
+                ubxHPPOSLLHMessage={serverEventStore.ubxHPPOSLLHMessage}
+                sdSuccess={apiStore.serverState.sdSuccess}
+            />
+            <Button
+                variant="outlined"
+                color={enabled ? 'secondary' : 'primary'}
+                className={classes.button}
+                onClick={() => buttonClickHandler()}
+            >
+                {enabled ? 'Stop' : 'Start'}
+            </Button>
+            <Typography
+                className={classes.title}
+                color="textSecondary"
+                gutterBottom
+                inline={true}
+            >
+                {`Rec time :  ${state.timeReceive} sec`}
+            </Typography>
+        </div>
+    );
+});
 
-export default withStyles(styles, { withTheme: true })(ReceiverView);
+export default ReceiverView;

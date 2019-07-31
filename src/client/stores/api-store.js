@@ -78,7 +78,7 @@ export default class ApiStore {
         if (
             this._ntripState &&
             this._ntripState.lastUpdate &&
-            new Date() - this._ntripState.lastUpdate < 1000
+            new Date() - this._ntripState.lastUpdate < 500
         ) {
             return this.sendApiWarn('Small time interval');
         }
@@ -277,7 +277,7 @@ export default class ApiStore {
             sender: this
         });
 
-        return err;
+        return warn;
     };
 
     get api() {

@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
@@ -13,7 +13,7 @@ import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     root: {
         width: '100%'
     },
@@ -53,24 +53,35 @@ const styles = theme => ({
     },
     divider: {
         height: 1
-    },
-});
-class NtripClient extends React.Component {
-    state = {
+    }
+}));
+
+const NtripClient = props => {
+    const classes = useStyles();
+    const theme = useTheme();
+    const {
+        connected,
+        open,
+        handleConnect,
+        handleDisconnect,
+        ...other
+    } = props;
+
+    const [state, setState] = React.useState({
         ntripClient: {
             host: '82.202.202.138',
             port: 2102,
             user: 'user',
             password: 'pass',
             mountPoint: 'MOUNT',
-            ...this.props.connectionInfo
+            ...props.connectionInfo
         }
-    };
+    });
 
-    handleNtripClientFormChanged = prop => event => {
+    const handleNtripClientFormChanged = prop => event => {
         console.debug(event);
         const value = event.target.value || '';
-        this.setState(prevState => ({
+        setState(prevState => ({
             ntripClient: {
                 ...prevState.ntripClient,
                 [prop]: value
@@ -78,152 +89,151 @@ class NtripClient extends React.Component {
         }));
     };
 
-    render() {
-        const {
-            connected,
-            open,
-            handleConnect,
-            handleDisconnect,
-            classes,
-            ...other
-        } = this.props;
-        //const connected = this.props.uiStore.state.corrections.enabled;
-        console.debug({ connected });
-
-        return (
-            <div className={classes.root}>
-                <ExpansionPanel defaultExpanded>
-                    <ExpansionPanelSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        aria-controls="panel1c-content"
-                        id="panel1c-header"
-                    >
-                        <div className={classes.column}>
-                            <Typography className={classes.heading}>
-                                Ntrip Client
-                            </Typography>
-                        </div>
-                        <div className={classes.column}>
-                            <Typography
-                                className={classes.secondaryHeading}
-                                color={connected ? 'primary' : 'secondary'}
-                            >
-                                {connected ? 'Connected' : ''}
-                            </Typography>
-                        </div>
-                    </ExpansionPanelSummary>
-                    <ExpansionPanelDetails className={classes.details}>
-                        <div className={classes.column}>
-                            <form
-                                className={classes.container}
-                                noValidate
-                                autoComplete="off"
-                            >
-                                <div className={classes.column}>
-                                    <TextField
-                                        id="host-input"
-                                        label="Host*"
-                                        placeholder="e.g. 192.168.1.1"
-                                        className={classes.textField}
-                                        margin="normal"
-                                        value={this.state.ntripClient.host}
-                                        onChange={this.handleNtripClientFormChanged(
-                                            'host'
-                                        )}
-                                        disabled={connected}
-                                        //required={true}
-                                        {...((!this.state.ntripClient.host || this.state.ntripClient.host == '') ? {error:''} : {})}
-                                    />
-                                    <TextField
-                                        id="port-input"
-                                        label="Port"
-                                        className={classes.textField}
-                                        margin="normal"
-                                        value={this.state.ntripClient.port}
-                                        onChange={this.handleNtripClientFormChanged(
-                                            'port'
-                                        )}
-                                        disabled={connected}
-                                    />
-                                    <TextField
-                                        id="mountpoint-input"
-                                        label="Mount point*"
-                                        className={classes.textField}
-                                        margin="normal"
-                                        value={
-                                            this.state.ntripClient.mountPoint
-                                        }
-                                        onChange={this.handleNtripClientFormChanged(
-                                            'mountPoint'
-                                        )}
-                                        disabled={connected}
-                                        //required={true}
-                                        {...((!this.state.ntripClient.mountPoint || this.state.ntripClient.mountPoint == '') ? {error:''} : {})}
-                                    />
-                                </div>
-                                <div className={classes.column}>
-                                    <TextField
-                                        id="user-input"
-                                        label="User"
-                                        className={classes.textField}
-                                        margin="normal"
-                                        value={this.state.ntripClient.user}
-                                        onChange={this.handleNtripClientFormChanged(
-                                            'user'
-                                        )}
-                                        disabled={connected}
-                                    />
-                                    <TextField
-                                        id="password-input"
-                                        label="User"
-                                        className={classes.textField}
-                                        margin="normal"
-                                        value={this.state.ntripClient.password}
-                                        type="password"
-                                        autoComplete="current-password"
-                                        onChange={this.handleNtripClientFormChanged(
-                                            'password'
-                                        )}
-                                        disabled={connected}
-                                    />
-                                </div>
-                            </form>
-                        </div>
-                        <div className={clsx(classes.column, classes.helper)}>
-                            {!connected && (
-                                <Typography variant="caption">
-                                    Source Table
-                                    <br />
-                                    <a
-                                        href="#sub-labels-and-columns"
-                                        className={classes.link}
-                                    >
-                                        Load Table
-                                    </a>
-                                </Typography>
-                            )}
-                        </div>
-                    </ExpansionPanelDetails>
-                    <Divider className={classes.divider} />
-                    <ExpansionPanelActions>
-                        <Button size="small" onClick={() => handleDisconnect({...this.state.ntripClient})}>
-                            Stop
-                        </Button>
-                        <Button
-                            size="small"
-                            color="primary"
-                            onClick={() => handleConnect({...this.state.ntripClient})}
-                            disabled={connected}
+    return (
+        <div className={classes.root}>
+            <ExpansionPanel defaultExpanded>
+                <ExpansionPanelSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1c-content"
+                    id="panel1c-header"
+                >
+                    <div className={classes.column}>
+                        <Typography className={classes.heading}>
+                            Ntrip Client
+                        </Typography>
+                    </div>
+                    <div className={classes.column}>
+                        <Typography
+                            className={classes.secondaryHeading}
+                            color={connected ? 'primary' : 'secondary'}
                         >
-                            Connect
-                        </Button>
-                    </ExpansionPanelActions>
-                </ExpansionPanel>
-            </div>
-        );
-    }
-}
+                            {connected ? 'Connected' : ''}
+                        </Typography>
+                    </div>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails className={classes.details}>
+                    <div className={classes.column}>
+                        <form
+                            className={classes.container}
+                            noValidate
+                            autoComplete="off"
+                        >
+                            <div className={classes.column}>
+                                <TextField
+                                    id="host-input"
+                                    label="Host*"
+                                    placeholder="e.g. 192.168.1.1"
+                                    className={classes.textField}
+                                    margin="normal"
+                                    value={state.ntripClient.host}
+                                    onChange={handleNtripClientFormChanged(
+                                        'host'
+                                    )}
+                                    disabled={connected}
+                                    //required={true}
+                                    {...(!state.ntripClient.host ||
+                                    state.ntripClient.host == ''
+                                        ? { error: '' }
+                                        : {})}
+                                />
+                                <TextField
+                                    id="port-input"
+                                    label="Port"
+                                    className={classes.textField}
+                                    margin="normal"
+                                    value={state.ntripClient.port}
+                                    onChange={handleNtripClientFormChanged(
+                                        'port'
+                                    )}
+                                    disabled={connected}
+                                />
+                                <TextField
+                                    id="mountpoint-input"
+                                    label="Mount point*"
+                                    className={classes.textField}
+                                    margin="normal"
+                                    value={state.ntripClient.mountPoint}
+                                    onChange={handleNtripClientFormChanged(
+                                        'mountPoint'
+                                    )}
+                                    disabled={connected}
+                                    //required={true}
+                                    {...(!state.ntripClient.mountPoint ||
+                                    state.ntripClient.mountPoint == ''
+                                        ? { error: '' }
+                                        : {})}
+                                />
+                            </div>
+                            <div className={classes.column}>
+                                <TextField
+                                    id="user-input"
+                                    label="User"
+                                    className={classes.textField}
+                                    margin="normal"
+                                    value={state.ntripClient.user}
+                                    onChange={handleNtripClientFormChanged(
+                                        'user'
+                                    )}
+                                    disabled={connected}
+                                />
+                                <TextField
+                                    id="password-input"
+                                    label="User"
+                                    className={classes.textField}
+                                    margin="normal"
+                                    value={state.ntripClient.password}
+                                    type="password"
+                                    autoComplete="current-password"
+                                    onChange={handleNtripClientFormChanged(
+                                        'password'
+                                    )}
+                                    disabled={connected}
+                                />
+                            </div>
+                        </form>
+                    </div>
+                    <div className={clsx(classes.column, classes.helper)}>
+                        {!connected && (
+                            <Typography variant="caption">
+                                Source Table
+                                <br />
+                                <a
+                                    href="#sub-labels-and-columns"
+                                    className={classes.link}
+                                >
+                                    Load Table
+                                </a>
+                            </Typography>
+                        )}
+                    </div>
+                </ExpansionPanelDetails>
+                <Divider className={classes.divider} />
+                <ExpansionPanelActions>
+                    <Button
+                        size="small"
+                        onClick={() =>
+                            handleDisconnect({ ...state.ntripClient })
+                        }
+                    >
+                        Stop
+                    </Button>
+                    <Button
+                        size="small"
+                        color="primary"
+                        onClick={() =>
+                            handleConnect({ ...state.ntripClient })
+                        }
+                        disabled={connected}
+                    >
+                        Connect
+                    </Button>
+                </ExpansionPanelActions>
+            </ExpansionPanel>
+        </div>
+    );
+};
 
+/*
 NtripClient.propTypes = {
     classes: PropTypes.object.isRequired,
     open: PropTypes.bool.isRequired,
@@ -231,6 +241,6 @@ NtripClient.propTypes = {
     handleConnect: PropTypes.func.isRequired,
     handleDisconnect: PropTypes.func.isRequired,
     connectionInfo: PropTypes.object.isRequired
-};
+};*/
 
-export default withStyles(styles, { withTheme: true })(NtripClient);
+export default NtripClient;

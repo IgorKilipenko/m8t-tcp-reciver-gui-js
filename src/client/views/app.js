@@ -1,19 +1,22 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
-import { withStyles } from '@material-ui/core/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import MiniDrawer from '../components/root';
 import ApiSocket from '../components/api-socket';
-import { inject, observer } from 'mobx-react';
-import { withRouter } from 'react-router-dom';
+import { observer } from 'mobx-react';
 import { serverEvents, events as EVENTS } from '../components/server-events';
 import { ClassIds, NavMessageIds } from '../model/ublox';
 import { EventEmitter } from 'events';
 
-//import { UbxDecoder, ClassIds, NavMessageIds } from '../model/ublox';
-
-//const api = new ApiSocket();
+/* Migrate to React hooks" */
+import useReactRouter from 'use-react-router';
+import { MobXProviderContext } from 'mobx-react';
+function useStores() {
+    return React.useContext(MobXProviderContext);
+}
+////////////////////////////
 
 class MainInterval extends EventEmitter {
     constructor() {
@@ -66,130 +69,129 @@ class MainInterval extends EventEmitter {
     }
 }
 
-const styles = theme => ({});
+const useStyles = makeStyles(theme => ({}));
 
 const _mainInterval = new MainInterval();
 _mainInterval.start(5000);
-const _updateErrors = 0;
+let _updateErrors = 0;
 
-@inject('apiStore')
-@inject('serverEventStore')
-@withRouter
-@observer
-class App extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            gps: {},
-            server: {}
-        };
-        //this.decoder = new UbxDecoder();
-    }
+const App = observer(props => {
+    const classes = useStyles();
+    const theme = useTheme();
 
-    handleServerEvents = (event, msg) => {
-        //console.debug("msg app", {event, msg})
-        this.props.serverEventStore.setMessage(event, msg);
+    const { history, location, match } = useReactRouter();
+    const stores = useStores();
+    const { apiStore, serverEventStore } = stores;
+    let timeoutHandler = null;
+
+    const handleServerEvents = (event, msg) => {
+        serverEventStore.setMessage(event, msg);
     };
 
-    updateAllApiState = () => {
-        if (this.props.apiStore.updateServerState() != null) {
-            this._updateErrors += 1;
+    const updateAllApiState = () => {
+        if (apiStore.updateServerState() != null) {
+            _updateErrors += 1;
         }
-        if (this.props.apiStore.updateReceiverState() != null) {
-            this._updateErrors += 1;
+        if (apiStore.updateReceiverState() != null) {
+            _updateErrors += 1;
         }
-        if (this.props.apiStore.updateNtripState() != null) {
-            this._updateErrors += 1;
+        if (apiStore.updateNtripState() != null) {
+            _updateErrors += 1;
         }
     };
 
-    _updater = args => {
-        this.updateAllApiState();
-        //serverEvents.pongUbxWs();
+    const _updater = args => {
+        updateAllApiState();
     };
-    _lock = false;
 
-    _navMsgCallback = msg => {
+    const _navMsgCallback = msg => {
         if (msg && msg.class === ClassIds.NAV) {
             //this.handleServerEvents(EVENTS.ubxNav, msg);
             switch (msg.type) {
                 case NavMessageIds.PVT:
-                    this.props.serverEventStore.setPvtMessage(msg);
+                    serverEventStore.setPvtMessage(msg);
                     break;
                 case NavMessageIds.HPPOSLLH:
-                    this.props.serverEventStore.setHPPOSLLHMessage(msg);
+                    serverEventStore.setHPPOSLLHMessage(msg);
                     break;
             }
         }
     };
-    componentDidMount = () => {
+
+    const componentDidMount = () => {
         console.debug('Mounted APP');
 
-        this.updateAllApiState();
-        _mainInterval.on('interval', this._updater);
+        updateAllApiState();
+        _mainInterval.on('interval', _updater);
 
-        this.timeoutHandler = setTimeout(() => {
-            this.props.apiStore.updateWiFiList();
+        timeoutHandler = setTimeout(() => {
+            apiStore.updateWiFiList();
         }, 500);
 
         serverEvents.onDebugMessage(msg =>
-            this.handleServerEvents(EVENTS.debug, msg)
+            handleServerEvents(EVENTS.debug, msg)
         );
 
-        serverEvents.onUbxNavMessage(this._navMsgCallback);
+        serverEvents.onUbxNavMessage(_navMsgCallback);
     };
 
-    componentWillUnmount = () => {
+    const componentWillUnmount = () => {
         console.debug('Unmount APP');
 
-        if (this.timeoutHandler) {
-            clearTimeout(this.timeoutHandler);
+        if (timeoutHandler) {
+            clearTimeout(timeoutHandler);
         }
 
-        _mainInterval.off('interval', this._updater);
+        _mainInterval.off('interval', _updater);
 
-        serverEvents.offUbxNavMessage(this._navMsgCallback);
+        serverEvents.offUbxNavMessage(_navMsgCallback);
     };
 
-    render() {
-        const { gps } = this.state;
-        return (
-            <div>
-                <Helmet>
-                    {/*<meta charSet="ANSI" />*/}
-                    {/*<meta charSet="Windows-1252" />*/}
-                    <meta charSet="utf-8" />
-                    <title>ESP GPS</title>
-                    {/*<link rel="icon" href={favicon}/>
-                    <meta name="msapplication-TileImage" content={favicon}/>*/}
-                    <meta name="theme-color" content="#9CC2CE" />
-                    <meta
-                        name="viewport"
-                        content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no"
-                    />
-                    <link
-                        rel="stylesheet"
-                        href="https://fonts.googleapis.com/css?family=Roboto:300,400,500"
-                    />
-                    <link
-                        href="https://fonts.googleapis.com/css?family=Montserrat+Alternates:300,300i,400,400i,500,500i,600,600i&amp;subset=cyrillic"
-                        rel="stylesheet"
-                    />
-                    <link
-                        rel="stylesheet"
-                        href="https://fonts.googleapis.com/icon?family=Material+Icons"
-                    />
-                </Helmet>
-                <MiniDrawer>
-                    {/*<Button onClick={async () => this.sendGnssCmd()}>
-                        {gps.enabled ? 'Stop GPS' : 'Start GPS'}
-                    </Button>
-                    <Button>Тест utf-8</Button>*/}
-                    {this.props.children}
-                </MiniDrawer>
-            </div>
-        );
-    }
-}
+    React.useEffect(() => {
+        console.info('App useEffect START');
+        componentDidMount();
+        return () => {
+            console.info('App useEffect STOP');
+            componentWillUnmount();
+        };
+    }, []);
 
-export default withStyles(styles, { withTheme: true })(App);
+    return (
+        <div>
+            <Helmet>
+                {/*<meta charSet="ANSI" />*/}
+                {/*<meta charSet="Windows-1252" />*/}
+                <meta charSet="utf-8" />
+                <title>ESP GPS</title>
+                {/*<link rel="icon" href={favicon}/>
+                <meta name="msapplication-TileImage" content={favicon}/>*/}
+                <meta name="theme-color" content="#9CC2CE" />
+                <meta
+                    name="viewport"
+                    content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no"
+                />
+                <link
+                    rel="stylesheet"
+                    href="https://fonts.googleapis.com/css?family=Roboto:300,400,500"
+                />
+                <link
+                    href="https://fonts.googleapis.com/css?family=Montserrat+Alternates:300,300i,400,400i,500,500i,600,600i&amp;subset=cyrillic"
+                    rel="stylesheet"
+                />
+                <link
+                    rel="stylesheet"
+                    href="https://fonts.googleapis.com/icon?family=Material+Icons"
+                />
+            </Helmet>
+            <MiniDrawer>
+                {/*<Button onClick={async () => this.sendGnssCmd()}>
+                    {gps.enabled ? 'Stop GPS' : 'Start GPS'}
+                </Button>
+                <Button>Тест utf-8</Button>*/}
+                {props.children}
+            </MiniDrawer>
+        </div>
+    );
+});
+
+export default App;
