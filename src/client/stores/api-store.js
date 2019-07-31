@@ -1,7 +1,18 @@
-import { observable, computed, action, configure, runInAction } from 'mobx';
+import {
+    observable,
+    computed,
+    action,
+    configure,
+    runInAction
+} from 'mobx';
 import ApiSocket from '../components/api-socket';
 
-configure({ enforceActions: 'observed' });
+
+configure({
+    enforceActions: 'observed',
+    isolateGlobalState: true,
+    disableErrorBoundaries: false
+});
 
 const api = new ApiSocket();
 

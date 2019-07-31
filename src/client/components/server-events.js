@@ -57,7 +57,7 @@ class ServerEvents extends EventEmitter {
             this._wsClosed = true;
             console.error(err);
             this.ws.close();
-        }
+        };
     }
 
     _wsClosed = true;
@@ -127,9 +127,13 @@ class ServerEvents extends EventEmitter {
     };
 
     onUbxNavMessage = callback => {
-        this.addWsEventListener(events.ubxNav, msg => {
+        return this.addWsEventListener(events.ubxNav, msg => {
             callback(msg);
         });
+    };
+
+    offUbxNavMessage = callback => {
+        return this.off(events.ubxNav, callback);
     };
 
     //onReceiverData = callback => {
@@ -147,7 +151,11 @@ class ServerEvents extends EventEmitter {
     //};
 
     addWsEventListener = (event, callback) => {
-        this.on(event, callback);
+        return this.on(event, callback);
+    };
+
+    removeListener = (event, callback) => {
+        return this.off(event, callback);
     };
 }
 

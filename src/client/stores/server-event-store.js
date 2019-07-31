@@ -1,6 +1,13 @@
-import { observable, computed, action } from 'mobx';
+import { observable, computed, action, configure } from 'mobx';
 import { events } from '../components/server-events';
 import { ClassIds, NavMessageIds } from '../model/ublox';
+
+
+configure({
+    enforceActions: 'observed',
+    isolateGlobalState: true,
+    disableErrorBoundaries: false
+});
 
 const MAX_LEN = 500;
 
@@ -11,6 +18,7 @@ export default class ServerEventStore {
     @observable _receiverData = [];
     @observable _pvtMessage = null; // Last PVT message
     @observable _hpposllhMessage = null; // Last HPPOSLLH message
+
 
     @action setDebugMessage(msg) {
         let msgs = [];
@@ -35,14 +43,20 @@ export default class ServerEventStore {
     }
 
     @action setUbxNavMessage(msg) {
-        let msgs = [];
+        /*let msgs = [];
         const len = this._ubxNavMessage.length;
         if (len >= MAX_LEN) {
             msgs = [msg, ...msgs.slice(0, len - MAX_LEN - 1)];
         } else {
             msgs = [msg, ...this._ubxNavMessage];
         }
-        this._ubxNavMessage = msgs;
+        this._ubxNavMessage = msgs;*/
+
+        const len = this._ubxNavMessage.length;
+        if (len >= MAX_LEN) {
+            this._ubxNavMessage.shift();
+        }
+        this._ubxNavMessage.push(msg);
     }
 
     @action setMessage(event, msg) {

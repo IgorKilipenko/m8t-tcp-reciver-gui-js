@@ -5,6 +5,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import ApiSocket from '../../components/api-socket';
 import { inject, observer } from 'mobx-react';
+import { trace } from 'mobx';
 import { withRouter } from 'react-router-dom';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
@@ -14,7 +15,7 @@ import Typography from '@material-ui/core/Typography';
 import SdIcon from '@material-ui/icons/SdStorage';
 import IconButton from '@material-ui/core/IconButton';
 import GoogleMap from '../../components/Map';
-import NavPane from '../../components/NavPane'
+import NavPane from '../../components/NavPane';
 
 const api = new ApiSocket();
 
@@ -47,7 +48,12 @@ class ReceiverView extends React.Component {
             timeReceive: 0
         };
         this.recTiemeInterval = null;
+
     }
+
+    enableMobxTrace = enable => {
+        trace(true);
+    };
 
     getTimeReceive = () => {
         let date = new Date(this.props.apiStore.timeReceive || 0);
@@ -124,7 +130,10 @@ class ReceiverView extends React.Component {
         const sEvents = this.props.serverEventStore;
         const pvtMessage = sEvents.ubxPvtMessage;
         const carrierSolution = pvtMessage ? pvtMessage.carrierSolution : null;
-        const poss = (carrierSolution && sEvents.ubxHPPOSLLHMessage ) ? sEvents.ubxHPPOSLLHMessage : pvtMessage;
+        const poss =
+            carrierSolution && sEvents.ubxHPPOSLLHMessage
+                ? sEvents.ubxHPPOSLLHMessage
+                : pvtMessage;
 
         return (
             <Card className={classes.receiverCard}>
@@ -132,7 +141,11 @@ class ReceiverView extends React.Component {
                     {poss && (
                         <div>
                             <div>
-                            <NavPane position={poss} carrierSolution={carrierSolution} fixMode={pvtMessage.fixType}/>
+                                <NavPane
+                                    position={poss}
+                                    carrierSolution={carrierSolution}
+                                    fixMode={pvtMessage.fixType}
+                                />
                                 <GoogleMap
                                     center={{
                                         lng: poss.longitude,

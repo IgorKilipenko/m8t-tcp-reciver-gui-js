@@ -15,9 +15,6 @@ import { EventEmitter } from 'events';
 
 //const api = new ApiSocket();
 
-
-
-
 class MainInterval extends EventEmitter {
     constructor() {
         super();
@@ -54,7 +51,10 @@ class MainInterval extends EventEmitter {
             clearInterval(this._inrevalPrt);
             this._enabled = false;
             this._inrevalPrt = null;
-            this.emit('stop', {totalTime: new Date() - this._timeStart, interval: this._interval})
+            this.emit('stop', {
+                totalTime: new Date() - this._timeStart,
+                interval: this._interval
+            });
             return true;
         } else {
             return false;
@@ -86,30 +86,42 @@ class App extends React.Component {
         //this.decoder = new UbxDecoder();
     }
 
-
     handleServerEvents = (event, msg) => {
         //console.debug("msg app", {event, msg})
         this.props.serverEventStore.setMessage(event, msg);
     };
 
     updateAllApiState = () => {
-        if (this.props.apiStore.updateServerState() != null){
-            this._updateErrors += 1
+        if (this.props.apiStore.updateServerState() != null) {
+            this._updateErrors += 1;
         }
-        if (this.props.apiStore.updateReceiverState() != null){
-            this._updateErrors += 1
+        if (this.props.apiStore.updateReceiverState() != null) {
+            this._updateErrors += 1;
         }
-        if (this.props.apiStore.updateNtripState() != null){
-            this._updateErrors += 1
+        if (this.props.apiStore.updateNtripState() != null) {
+            this._updateErrors += 1;
         }
-    }
+    };
 
-    _updater = (args) => {
+    _updater = args => {
         this.updateAllApiState();
         //serverEvents.pongUbxWs();
-    }
+    };
     _lock = false;
 
+    _navMsgCallback = msg => {
+        if (msg && msg.class === ClassIds.NAV) {
+            //this.handleServerEvents(EVENTS.ubxNav, msg);
+            switch (msg.type) {
+                case NavMessageIds.PVT:
+                    this.props.serverEventStore.setPvtMessage(msg);
+                    break;
+                case NavMessageIds.HPPOSLLH:
+                    this.props.serverEventStore.setHPPOSLLHMessage(msg);
+                    break;
+            }
+        }
+    };
     componentDidMount = () => {
         console.debug('Mounted APP');
 
@@ -123,20 +135,8 @@ class App extends React.Component {
         serverEvents.onDebugMessage(msg =>
             this.handleServerEvents(EVENTS.debug, msg)
         );
-        serverEvents.onUbxNavMessage(msg => {
-            //console.log('Nav msg');
-            if (msg && msg.class === ClassIds.NAV) {
-                //this.handleServerEvents(EVENTS.ubxNav, msg);
-                switch (msg.type) {
-                    case NavMessageIds.PVT:
-                        this.props.serverEventStore.setPvtMessage(msg);
-                        break;
-                    case NavMessageIds.HPPOSLLH:
-                        this.props.serverEventStore.setHPPOSLLHMessage(msg);
-                        break;
-                }
-            }
-        });
+
+        serverEvents.onUbxNavMessage(this._navMsgCallback);
     };
 
     componentWillUnmount = () => {
@@ -147,6 +147,8 @@ class App extends React.Component {
         }
 
         _mainInterval.off('interval', this._updater);
+
+        serverEvents.offUbxNavMessage(this._navMsgCallback);
     };
 
     render() {
