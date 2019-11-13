@@ -16,7 +16,7 @@ configure({
 
 const api = new ApiSocket();
 
-export default class ApiStore {
+class ApiStore {
     @observable _receiverState = {
         enabled: false,
         timeStart: 0,
@@ -284,3 +284,5 @@ export default class ApiStore {
         return api;
     }
 }
+
+export default new ApiStore();

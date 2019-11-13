@@ -7,21 +7,17 @@ import SignalCellularAlt from '@material-ui/icons/SignalCellularAlt';
 
 import { NTRIP_CLIENT_DEF as userConfig } from '../../../../user-config';
 
-/* Migrate to React hooks" */
-import useReactRouter from 'use-react-router';
-import { MobXProviderContext } from 'mobx-react';
-function useStores() {
-    return React.useContext(MobXProviderContext);
-}
-////////////////////////////
+//////////////////////////////////
+import {apiStore} from '../../stores';
+//////////////////////////////////
 
 const useStyles = makeStyles(theme => ({
     root: {
         display: 'flex'
     },
     textField: {
-        marginLeft: theme.spacing.unit,
-        marginRight: theme.spacing.unit,
+        marginLeft: theme.spacing(1),
+        marginRight: theme.spacing(1),
         width: 'auto'
     }
 }));
@@ -38,9 +34,6 @@ const routeInfo = {
 const CorrectionsView = observer(props => {
     const classes = useStyles();
     const theme = useTheme();
-
-    const { history, location, match } = useReactRouter();
-    const { apiStore } = useStores();
 
     const ntripConnInfo = userConfig;
     let localStorage = (window && window.localStorage) ?  window.localStorage : null;
@@ -60,7 +53,7 @@ const CorrectionsView = observer(props => {
         //apiStore.updateNtripState();
     };
 
-    const componentDidMount = () => {
+    const atMount /*componentDidMount*/ = () => {
         apiStore.updateNtripState();
         if (!localStorage) {
             console.warn('localStorage is null');
@@ -83,7 +76,7 @@ const CorrectionsView = observer(props => {
 
     React.useEffect(() => {
         console.info('CorrectionsView useEffect START');
-        componentDidMount();
+        atMount();
         return () => {
             console.info('CorrectionsView useEffect STOP');
         };

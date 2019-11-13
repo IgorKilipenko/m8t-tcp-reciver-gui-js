@@ -10,13 +10,9 @@ import { serverEvents, events as EVENTS } from '../components/server-events';
 import { ClassIds, NavMessageIds } from '../model/ublox';
 import { EventEmitter } from 'events';
 
-/* Migrate to React hooks" */
-import useReactRouter from 'use-react-router';
-import { MobXProviderContext } from 'mobx-react';
-function useStores() {
-    return React.useContext(MobXProviderContext);
-}
-////////////////////////////
+//////////////////////////////
+import { apiStore, serverEventStore } from '../stores';
+//////////////////////////////
 
 class MainInterval extends EventEmitter {
     constructor() {
@@ -79,9 +75,6 @@ const App = observer(props => {
     const classes = useStyles();
     const theme = useTheme();
 
-    const { history, location, match } = useReactRouter();
-    const stores = useStores();
-    const { apiStore, serverEventStore } = stores;
     let timeoutHandler = null;
 
     const handleServerEvents = (event, msg) => {
@@ -148,10 +141,10 @@ const App = observer(props => {
     };
 
     React.useEffect(() => {
-        console.info('App useEffect START');
+        console.info('[--> APP.js] useEffect START');
         componentDidMount();
         return () => {
-            console.info('App useEffect STOP');
+            console.info('[--> APP.js] useEffect STOP');
             componentWillUnmount();
         };
     }, []);

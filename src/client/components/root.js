@@ -24,17 +24,13 @@ import SignalCellularAlt from '@material-ui/icons/SignalCellularAlt';
 import LogIcon from '@material-ui/icons/Message';
 import StreamIcon from '@material-ui/icons/Input';
 import SpeakerPhoneIcon from '@material-ui/icons/SpeakerPhone';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import { CorrectionsView, CorrectionsViewInfo } from '../views';
 
-/* Migrate to React hooks" */
-import useReactRouter from 'use-react-router';
-import { MobXProviderContext } from 'mobx-react';
-function useStores() {
-    return React.useContext(MobXProviderContext);
-}
-////////////////////////////
+///////////////////////////////////
+import { apiStore, uiStore } from '../stores';
+///////////////////////////////////
 
 import axios from 'axios';
 
@@ -116,10 +112,7 @@ const useStyles = makeStyles(theme => ({
 
 const MiniDrawer = observer(props => {
     console.debug('PROPS', { props });
-    const { history, location, match } = useReactRouter();
-    const stores = useStores();
-    console.debug('STORES', { stores });
-    const { apiStore, uiStore } = stores;
+    let location = useLocation()
     const [state, setState] = React.useState({
         open: false,
         status: null,
@@ -286,7 +279,9 @@ const MiniDrawer = observer(props => {
                         key={CorrectionsViewInfo.routeInfo.name}
                         component={Link}
                         to={CorrectionsViewInfo.routeInfo.path}
-                        selected={CorrectionsViewInfo.routeInfo.path === pathname}
+                        selected={
+                            CorrectionsViewInfo.routeInfo.path === pathname
+                        }
                     >
                         <ListItemIcon>
                             <CorrectionsViewInfo.icons.main

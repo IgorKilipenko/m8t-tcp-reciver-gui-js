@@ -11,13 +11,10 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 
-/* Migrate to React hooks" */
-import useReactRouter from 'use-react-router';
-import { MobXProviderContext } from 'mobx-react';
-function useStores() {
-    return React.useContext(MobXProviderContext);
-}
-////////////////////////////
+
+//////////////////////////////////
+import {uiStore, serverEventStore} from '../../stores'
+//////////////////////////////////
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -31,9 +28,6 @@ const LogView = observer(props => {
     const classes = useStyles();
     const theme = useTheme();
 
-    const { history, location, match } = useReactRouter();
-    const stores = useStores();
-    const { uiStore, serverEventStore } = stores;
     const activeTab = uiStore.state.logView.activeTab;
     const [state, setState] = React.useState({
         messages: []

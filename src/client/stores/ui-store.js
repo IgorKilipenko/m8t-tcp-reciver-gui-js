@@ -1,6 +1,6 @@
 import { observable, computed, action } from 'mobx';
 
-export default class UiStore{
+class UiStore{
 
     @observable _state = {
         logView: {
@@ -27,3 +27,5 @@ export default class UiStore{
         return this._state;
     }
 }
+
+export default new UiStore();

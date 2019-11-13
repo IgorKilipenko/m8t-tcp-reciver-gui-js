@@ -11,7 +11,7 @@ configure({
 
 const MAX_LEN = 500;
 
-export default class ServerEventStore {
+class ServerEventStore {
     @observable _debugMessage = [];
     @observable _otaMessage = [];
     @observable _ubxNavMessage = [];
@@ -133,3 +133,6 @@ export default class ServerEventStore {
         this._hpposllhMessage = msg;
     };
 }
+
+
+export default new ServerEventStore();

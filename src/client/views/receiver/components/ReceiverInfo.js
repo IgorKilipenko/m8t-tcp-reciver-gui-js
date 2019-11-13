@@ -8,15 +8,17 @@ import CardMedia from '@material-ui/core/CardMedia';
 import Typography from '@material-ui/core/Typography';
 import SdIcon from '@material-ui/icons/SdStorage';
 import IconButton from '@material-ui/core/IconButton';
+import { height } from 'dom-helpers';
 
 const useStyles = makeStyles(theme => ({
     button: {
-        margin: theme.spacing.unit
+        margin: theme.spacing(1)
     },
     receiverCard: {
         minWidth: 275,
         //maxWidth: 500,
-        flexDirection: 'row'
+        flexDirection: 'row',
+        height: '80vh'
     }
 }));
 
@@ -43,12 +45,12 @@ const ReceiverInfo = props => {
                 {poss && (
                     <div>
                         <div>
-                            {navPane({
+                            {navPane && navPane({
                                 position: poss,
                                 carrierSolution,
                                 fixMode: ubxPvtMessage.fixType
                             })}
-                            {googleMap({
+                            {googleMap && googleMap({
                                 center: {
                                     lng: poss.longitude,
                                     lat: poss.latitude

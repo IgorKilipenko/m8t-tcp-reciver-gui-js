@@ -8,15 +8,10 @@ import { makeStyles, useTheme } from '@material-ui/core/styles';
 import ReceiverInfo from './components/ReceiverInfo';
 import NavPane from './components/NavPane';
 import GoogleMap from '../../components/Map';
-/* Migrate to React hooks" */
-import useReactRouter from 'use-react-router';
-import { MobXProviderContext } from 'mobx-react';
-function useStores() {
-    return React.useContext(MobXProviderContext);
-}
-////////////////////////////
 
-//const api = new ApiSocket();
+////////////////////////////////////
+import {apiStore, serverEventStore} from '../../stores';
+////////////////////////////////////
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -27,22 +22,14 @@ const useStyles = makeStyles(theme => ({
         flexDirection: 'column'
     },
     button: {
-        margin: theme.spacing.unit
+        margin: theme.spacing(1)
     },
-    receiverCard: {
-        minWidth: 275,
-        //maxWidth: 500,
-        flexDirection: 'row'
-    }
 }));
 
 const ReceiverView = observer(props => {
     const classes = useStyles();
     const theme = useTheme();
 
-    const { history, location, match } = useReactRouter();
-    const stores = useStores();
-    const { apiStore, serverEventStore } = stores;
     const [state, setState] = React.useState({
         timeReceive: 0
     });
@@ -90,7 +77,7 @@ const ReceiverView = observer(props => {
         }
     };
 
-    const componentDidMount = () => {
+    const _didMount /*componentDidMount*/ = () => {
         apiStore.updateReceiverState();
         setTimeout(() => {
             setState({
@@ -105,17 +92,17 @@ const ReceiverView = observer(props => {
         }, 1000);
     };
 
-    const componentWillUnmount = () => {
+    const _willUnmount /*componentWillUnmount*/ = () => {
         console.log('Unmount receiverView');
         clearRecTimeInterval();
     };
 
     React.useEffect(() => {
         console.info('ReceiverView useEffect START');
-        componentDidMount();
+        _didMount();
         return () => {
             console.info('ReceiverView useEffect STOP');
-            componentWillUnmount();
+            _willUnmount();
         };
     }, []);
 
@@ -156,12 +143,14 @@ const ReceiverView = observer(props => {
             </Button>
             <Typography
                 className={classes.title}
+                id="time-receive"
                 color="textSecondary"
                 gutterBottom
-                inline={true}
+                display={'inline'}
+                //value={`Rec time :  ${state.timeReceive} sec`}
             >
-                {`Rec time :  ${state.timeReceive} sec`}
-            </Typography>
+            {`Rec time :  ${state.timeReceive} sec`}
+            </Typography>}
         </div>
     );
 });
