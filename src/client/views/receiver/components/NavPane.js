@@ -15,7 +15,7 @@ import { GNSSfixTypes } from '../../../model/ublox/ClassIds';
 import green from '@material-ui/core/colors/green';
 
 const useStyles = makeStyles(theme => ({
-    root: {
+    receiverComponent: {
         width: '100%'
     },
     container: {
@@ -88,7 +88,7 @@ const NavPane = props => {
     };
 
     return (
-        <div className={classes.root}>
+        <div className={classes.receiverComponent}>
             <ExpansionPanel defaultExpanded>
                 <ExpansionPanelSummary
                     expandIcon={<ExpandMoreIcon />}

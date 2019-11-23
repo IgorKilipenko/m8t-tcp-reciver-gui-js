@@ -38,7 +38,8 @@ const drawerWidth = 240;
 
 const useStyles = makeStyles(theme => ({
     root: {
-        display: 'flex'
+        display: 'flex',
+        height: '100%'
     },
     appBar: {
         zIndex: theme.zIndex.drawer + 1,
@@ -94,7 +95,7 @@ const useStyles = makeStyles(theme => ({
     },
     content: {
         flexGrow: 1,
-        padding: theme.spacing(3)
+        padding: theme.spacing(1)
     },
 
     /**App Bar */
@@ -103,7 +104,7 @@ const useStyles = makeStyles(theme => ({
     },
     sectionDesktop: {
         display: 'flex',
-        paddingRight: theme.spacing(3)
+        paddingRight: theme.spacing(1)
         //[theme.breakpoints.up('md')]: {
         //    display: 'flex'
         //}

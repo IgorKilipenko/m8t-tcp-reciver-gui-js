@@ -6,11 +6,11 @@ import { API_KEY } from '../../../../user-config';
 import GpsFixedIcon from '@material-ui/icons/GpsFixed';
 
 const useStyles = makeStyles(theme => ({
-    root: {
-        width: '100%',
-        height: '100%',
+    GoogleMapComponent: {
+        //width: '100%',
+        //height: '100%',
         '& > div': {
-            'min-height': 500,
+            //'min-height': 500,
             overflow: ['auto', '!important']
         }
     }
@@ -39,7 +39,7 @@ const GoogleMap = props => {
     };
 
     return (
-        <div className={classes.root}>
+        <div className={classes.GoogleMapComponent}>
             <GoogleMapReact
                 bootstrapURLKeys={{ key: API_KEY }}
                 //defaultCenter={GoogleMap.defaultProps.center}

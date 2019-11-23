@@ -18,8 +18,9 @@ const useStyles = makeStyles(theme => ({
         minWidth: 275,
         //maxWidth: 500,
         flexDirection: 'row',
-        height: '80vh'
-    }
+        //height: '80vh'
+    },
+    sdIcon: {}
 }));
 
 const ReceiverInfo = props => {
@@ -42,28 +43,26 @@ const ReceiverInfo = props => {
     return (
         <Card className={classes.receiverCard}>
             <CardContent>
-                {poss && (
-                    <div>
-                        <div>
-                            {navPane && navPane({
-                                position: poss,
-                                carrierSolution,
-                                fixMode: ubxPvtMessage.fixType
-                            })}
-                            {googleMap && googleMap({
-                                center: {
-                                    lng: poss.longitude,
-                                    lat: poss.latitude
-                                }
-                            })}
-                        </div>
-                    </div>
-                )}
+                <div>
+                    {navPane({
+                        position: poss,
+                        carrierSolution,
+                        fixMode: ubxPvtMessage ? ubxPvtMessage.fixType : ""
+                    })}
+                </div>
+                <div>
+                    {googleMap({
+                        center: {
+                            lng: poss ? poss.longitude : 0,
+                            lat: poss ? poss.latitude : 0
+                        }
+                    })}
+                </div>
             </CardContent>
             <CardActions>
                 <IconButton
                     color="primary"
-                    className={classes.button}
+                    className={classes.sdIcon}
                     disabled={!sdSuccess}
                 >
                     <SdIcon />

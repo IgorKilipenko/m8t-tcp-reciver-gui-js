@@ -10,12 +10,13 @@ import NavPane from './components/NavPane';
 import GoogleMap from '../../components/Map';
 
 ////////////////////////////////////
-import {apiStore, serverEventStore} from '../../stores';
+import { apiStore, serverEventStore } from '../../stores';
 ////////////////////////////////////
 
 const useStyles = makeStyles(theme => ({
-    root: {
+    receiverView: {
         //display: 'flex'
+        height: '60vh'
     },
     details: {
         display: 'flex',
@@ -23,7 +24,7 @@ const useStyles = makeStyles(theme => ({
     },
     button: {
         margin: theme.spacing(1)
-    },
+    }
 }));
 
 const ReceiverView = observer(props => {
@@ -65,7 +66,7 @@ const ReceiverView = observer(props => {
         try {
             const { enabled } = apiStore.receiverState;
             const options = [apiStore.serverState.sdSuccess, true];
-            const res = await api.setReceive(!enabled, ...options);
+            const res = await apiStore.api.setReceive(!enabled, ...options);
             apiStore.updateReceiverState();
             if (res.data.enabled) {
                 startRecTimeInterval();
@@ -125,10 +126,10 @@ const ReceiverView = observer(props => {
     };
 
     return (
-        <div className={classes.root}>
+        <div className={classes.receiverView}>
             <ReceiverInfo
-                navPane={props => (<NavPane {...props}/>)}
-                googleMap={props => (<GoogleMap {...props}/>)}
+                navPane={props => <NavPane {...props} />}
+                googleMap={props => <GoogleMap {...props} />}
                 ubxPvtMessage={serverEventStore.ubxPvtMessage}
                 ubxHPPOSLLHMessage={serverEventStore.ubxHPPOSLLHMessage}
                 sdSuccess={apiStore.serverState.sdSuccess}
@@ -149,8 +150,8 @@ const ReceiverView = observer(props => {
                 display={'inline'}
                 //value={`Rec time :  ${state.timeReceive} sec`}
             >
-            {`Rec time :  ${state.timeReceive} sec`}
-            </Typography>}
+                {`Rec time :  ${state.timeReceive} sec`}
+            </Typography>
         </div>
     );
 });
