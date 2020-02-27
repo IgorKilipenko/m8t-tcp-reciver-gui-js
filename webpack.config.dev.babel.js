@@ -8,8 +8,9 @@ import CleanWebpackPlugin from 'clean-webpack-plugin';
 const devConfig = merge(common,
     {
         entry: [
-            'webpack-hot-middleware/client?reyload=true',
-            'react-hot-loader/patch'
+            'react-hot-loader/patch',
+            'webpack-hot-middleware/client?reload=true',
+            './src/client/index.js'
         ],
         mode: 'development',
         devtool: 'inline-source-map',

@@ -12,7 +12,7 @@ const port = 3001;
 const remoteDebugHost = DEBUG_HOST;
 
 const baseConfig = {
-    entry: ['./src/client/index.js'],
+    //entry: ['./src/client/index.js'],
     output: {
         path: path.join(__dirname, '/dist'),
         publicPath: '/',

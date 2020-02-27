@@ -4,6 +4,7 @@ import webpack from 'webpack';
 
 const prodConfig = merge(common, {
     mode: 'production',
+    entry: ['./src/client/index.js'],
     plugins:[
         new webpack.DefinePlugin({
             DEVELOPMENT: JSON.stringify(false)
